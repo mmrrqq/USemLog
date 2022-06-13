@@ -19,6 +19,7 @@
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 
 #include "Atmosphere/AtmosphericFog.h"
+#include "Components/SkyAtmosphereComponent.h"
 #include "Engine/Light.h"
 #include "Engine/SkyLight.h"
 
@@ -585,10 +586,14 @@ USLBaseIndividual* FSLIndividualUtils::CreateIndividualObject(UObject* Outer, AA
 	{
 		return NewObject<USLParticleIndividual>(Outer, USLParticleIndividual::StaticClass());
 	}
-	else if (Owner->IsA(AAtmosphericFog::StaticClass()) || Owner->GetName().Contains("SkySphere"))
+	else if (Owner->IsA(ASkyAtmosphere::StaticClass()) || Owner->GetName().Contains("SkySphere"))
 	{
 		return NewObject<USLBaseIndividual>(Outer, USLSkyIndividual::StaticClass());
 	}
+	//else if (Owner->IsA(AAtmosphericFog::StaticClass()) || Owner->GetName().Contains("SkySphere"))
+	//{
+	//	return NewObject<USLBaseIndividual>(Outer, USLSkyIndividual::StaticClass());
+	//}
 	else if (Owner->IsA(ALandscape::StaticClass()))
 	{
 		return NewObject<USLBaseIndividual>(Outer, USLLandscapeIndividual::StaticClass());
@@ -765,7 +770,8 @@ bool FSLIndividualUtils::CanHaveIndividualComponent(AActor* Actor)
 		|| Actor->IsA(ASLGazeOriginActor::StaticClass())
 		|| Actor->IsA(ASLGazeTargetActor::StaticClass())
 		|| Actor->IsA(APhysicsConstraintActor::StaticClass())
-		|| Actor->IsA(AAtmosphericFog::StaticClass())
+		//|| Actor->IsA(AAtmosphericFog::StaticClass())
+		|| Actor->IsA(ASkyAtmosphere::StaticClass())
 		|| Actor->IsA(ALandscape::StaticClass())
 		|| Actor->IsA(ALight::StaticClass())
 		|| Actor->IsA(ASkyLight::StaticClass())
