@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Individuals/Type/SLBaseIndividual.h"
+#include "Individuals/Type/SLVisibleIndividual.h"
 #include "SLParticleIndividual.generated.h"
  
 
@@ -10,7 +10,7 @@
  *
  */
 UCLASS(ClassGroup = SL)
-class USEMLOG_API USLParticleIndividual : public USLBaseIndividual
+class USEMLOG_API USLParticleIndividual : public USLVisibleIndividual
 {
     GENERATED_BODY()
 

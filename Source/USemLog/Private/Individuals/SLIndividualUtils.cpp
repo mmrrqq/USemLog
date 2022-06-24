@@ -612,8 +612,8 @@ USLBaseIndividual* FSLIndividualUtils::CreateIndividualObject(UObject* Outer, AA
 	}
 	else
 	{
-		//UE_LOG(LogTemp, Error, TEXT("%s::%d unsuported actor type for creating a semantic individual %s-%s.."),
-		//	*FString(__FUNCTION__), __LINE__, *Owner->GetClass()->GetName(), *Owner->GetName());
+		UE_LOG(LogTemp, Error, TEXT("%s::%d unsuported actor type for creating a semantic individual %s-%s.."),
+		*FString(__FUNCTION__), __LINE__, *Owner->GetClass()->GetName(), *Owner->GetName());
 	}
 	return nullptr;
 }
