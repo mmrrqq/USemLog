@@ -118,6 +118,9 @@ private:
 	// Publish data through ROS
 	void InitROSPublisher();
 
+	// Iterate and init the pouring monitors
+	void InitPouringMonitors();
+
 protected:
 	// True when ready to log
 	UPROPERTY(VisibleAnywhere, Transient, Category = "Semantic Logger")
@@ -164,6 +167,9 @@ private:
 
 	// List of the contact trigger shapes, stored to call Start and Finish on them
 	TArray<class ISLContactMonitorInterface*> ContactMonitors;
+
+	// List of the contact trigger shapes for pouring, stored to call Start and Finish on them
+	TArray<class USLPouringMonitor*> PouringMonitors;
 
 	// Cache of the grasp Monitors
 	TArray<class USLReachAndPreGraspMonitor*> ReachAndPreGraspMonitors;

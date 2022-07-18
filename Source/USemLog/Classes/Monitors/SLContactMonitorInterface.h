@@ -132,6 +132,7 @@ protected:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex);
 
+
 	// Delayed call of sending the finished event to check for possible concatenation of jittering events of the same type
 	void DelayedOverlapEndEventCallback();
 
@@ -149,6 +150,7 @@ public:
 	// Called when a supported by event begins / ends
 	FSLBeginSupportedBySignature OnBeginSLSupportedBy;
 	FSLEndSupportedBySignature OnEndSLSupportedBy;
+
 	
 protected:
 	// True if initialized

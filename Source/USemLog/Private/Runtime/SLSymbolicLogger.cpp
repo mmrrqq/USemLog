@@ -28,6 +28,10 @@
 #include "Monitors/SLReachAndPreGraspMonitor.h"
 #include "Monitors/SLPickAndPlaceMonitor.h"
 #include "Monitors/SLContainerMonitor.h"
+#include "Monitors/SLPouringMonitor.h"
+#include "Events/SLPouringEventHandler.h"
+#include "./SLPouringParticleAgentClass.h"
+
 
 #include "Owl/SLOwlExperimentStatics.h"
 
@@ -209,6 +213,8 @@ void ASLSymbolicLogger::InitImpl()
 		InitReachAndPreGraspMonitors();
 		InitManipulatorContactAndGraspMonitors();
 		InitPickAndPlaceMonitors();
+
+		//InitPouringMonitors();
 		//InitManipulatorGraspFixationMonitors();
 		/*InitManipulatorContainerMonitors();
 		InitSlicingMonitors();*/
@@ -255,6 +261,11 @@ void ASLSymbolicLogger::InitImpl()
 			}
 		}
 
+
+		/*if (LoggerParameters.EventsSelection.bPouring) {
+			InitPouringMonitors();
+		}*/
+		
 		//if (LoggerParameters.EventsSelection.bSlicing)
 		//{
 		//	InitSlicingMonitors();
@@ -316,6 +327,13 @@ void ASLSymbolicLogger::StartImpl()
 
 	// Start the semantic overlap areas
 	for (auto& Monitor : ContactMonitors)
+	{
+		Monitor->Start();
+	}
+
+
+	// Start the pouring 
+	for (auto& Monitor : PouringMonitors)
 	{
 		Monitor->Start();
 	}
@@ -394,6 +412,13 @@ void ASLSymbolicLogger::FinishImpl(bool bForced)
 		SLPapMonitor->Finish(EpisodeEndTime);
 	}
 	PickAndPlaceMonitors.Empty();
+
+	// Finish the pouring Monitors
+	for (auto& SLPouringMonitor : PouringMonitors)
+	{
+		SLPouringMonitor->Finish(EpisodeEndTime);
+	}
+	PouringMonitors.Empty();
 
 	//// Finish the container Monitors
 	//for (auto& SLContainerMonitor : ContainerMonitors)
@@ -837,5 +862,46 @@ void ASLSymbolicLogger::InitROSPublisher()
 	ROSPrologClient->Init(WriterParams.ServerIp, WriterParams.ServerPort);
 	FSLEntitiesManager::GetInstance()->SetPrologClient(ROSPrologClient);
 #endif // SL_WITH_ROSBRIDGE
+}
+
+// Iterate and init the pouring monitors
+void ASLSymbolicLogger::InitPouringMonitors()
+{
+	// Init all contact trigger handlers
+	for (TObjectIterator<UShapeComponent> Itr; Itr; ++Itr)
+	{
+		//if (Itr->GetClass()->ImplementsInterface(USLContactMonitorInterface::StaticClass()))
+		if (USLPouringMonitor* PouringMonitor = Cast<USLPouringMonitor>(*Itr))
+		{ 
+			if (IsValidAndLoaded(Itr->GetOwner()))
+			{
+				PouringMonitor->Init();
+				if (PouringMonitor->IsInit())
+				{
+					PouringMonitors.Emplace(PouringMonitor);
+					TSharedPtr<FSLPouringEventHandler> EvHandler = MakeShareable(new FSLPouringEventHandler());
+					EvHandler->Init(*Itr);
+					EvHandler->EpisodeId = LocationParameters.EpisodeId;
+					if (EvHandler->IsInit())
+					{
+						EventHandlers.Add(EvHandler);
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("%s::%d %s::%s's handler could not be init.."),
+							*FString(__func__), __LINE__, *Itr->GetOwner()->GetName(), *Itr->GetName());
+					}
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("%s::%d %s::%s's monitor could not be init.."),
+						*FString(__func__), __LINE__, *Itr->GetOwner()->GetName(), *Itr->GetName());
+				}
+			}
+
+
+		}
+	}
+
 }
 

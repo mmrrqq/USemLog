@@ -9,13 +9,12 @@
 class USLBaseIndividual;
 class FSLContactEvent;
 class FSLSupportedByEvent;
-class FSLPouringEvent;
 struct FSLContactResult;
 
 /**
- * Listens to contact events input, and outputs finished semantic contact events
+ * Listens to Pouring events input, and outputs finished semantic Pouring events
  */
-class FSLContactEventHandler : public ISLEventHandler
+class FSLPouringEventHandler : public ISLEventHandler
 {
 public:
 	// Init parent
@@ -28,12 +27,6 @@ public:
 	void Finish(float EndTime, bool bForced = false) override;
 
 private:
-	// Start new contact event
-	void AddNewContactEvent(const FSLContactResult& InResult);
-
-	// Finish then publish the event
-	bool FinishContactEvent(USLBaseIndividual* InOther, float EndTime);
-
 	// Start new Pouring event
 	void AddNewPouringEvent(const FSLContactResult& InResult);
 
@@ -50,34 +43,22 @@ private:
 	void FinishAllEvents(float EndTime);
 
 	// Event called when a semantic overlap event begins
-	void OnSLOverlapBegin(const FSLContactResult& InResult);
+	void OnSLPouringBegin(const FSLContactResult& InResult);
 	
 	// Event called when a semantic overlap event ends
-	void OnSLOverlapEnd(USLBaseIndividual* Self, USLBaseIndividual* Other, float Time);
-
-	// Event called when a supported by event begins
-	void OnSLSupportedByBegin(USLBaseIndividual* Supported, USLBaseIndividual* Supporting, float StartTime, const uint64 EventPairId);
-	
-	// Event called when a supported by event ends
-	void OnSLSupportedByEnd(const uint64 PairId1, const uint64 PairId2, float Time);
+	void OnSLPouringEnd(USLBaseIndividual* Self, USLBaseIndividual* Other, float Time);
 
 private:
 	// Parent semantic overlap area
-	class ISLContactMonitorInterface* Parent = nullptr;
-
-	// Array of started contact events
-	TArray<TSharedPtr<FSLContactEvent>> StartedContactEvents;
-
-	// Array of started supported by events
-	TArray<TSharedPtr<FSLSupportedByEvent>> StartedSupportedByEvents;
+	class USLPouringMonitor* Parent = nullptr;
 
 	// Array of started Pouring events
 	TArray<TSharedPtr<FSLPouringEvent>> StartedPouringEvents;
+
+	// Array of started supported by events
+	TArray<TSharedPtr<FSLSupportedByEvent>> StartedSupportedByEvents;
 	
 	/* Constant values */
 	constexpr static float PouringEventMin = 0.3f;
-	constexpr static float ContactEventMin = 0.05f;
 	constexpr static float SupportedByEventMin = 0.4f;
-	float PouringEndTime = 0.0;
-	int particlesOverlapEnded = 0;
 };
