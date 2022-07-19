@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Events/ISLEventHandler.h"
+#include "Individuals/Type/SLParticleIndividual.h"
 
 // Forward declarations
 class USLBaseIndividual;
@@ -73,6 +74,10 @@ private:
 
 	// Array of started Pouring events
 	TArray<TSharedPtr<FSLPouringEvent>> StartedPouringEvents;
+
+	// Array of particles that were in contact with source and destination contact monitor box
+	//TArray<USLParticleIndividual> PouringParticlesContactRegistered;
+
 	
 	/* Constant values */
 	constexpr static float PouringEventMin = 0.3f;

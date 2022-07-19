@@ -1,5 +1,5 @@
 // Copyright 2017-present, Institute for Artificial Intelligence - University of Bremen
-// Author: Andrei Haidu (http://haidu.eu)
+// Author: Abijit Vyas
 
 #pragma once
 
@@ -8,6 +8,10 @@
 // Forward declarations
 class USLBaseIndividual;
 
+enum class USLPouringEventTypes
+{PouredInto,
+PouredOut
+};
 /**
 * Pouring event class
 */
@@ -19,11 +23,11 @@ public:
 
 	// Constructor with initialization
 	FSLPouringEvent(const FString& InId, float InStart, float InEnd, uint64 InPairId,
-		USLBaseIndividual* InIndividual1, USLBaseIndividual* InIndividual2);
+		USLBaseIndividual* InIndividual1, USLBaseIndividual* InIndividual2, USLPouringEventTypes PouringEventTypes);
 
 	// Constructor initialization without end time
 	FSLPouringEvent(const FString& InId, const float InStart, const uint64 InPairId,
-		USLBaseIndividual* InIndividual1, USLBaseIndividual* InIndividual2);
+		USLBaseIndividual* InIndividual1, USLBaseIndividual* InIndividual2, USLPouringEventTypes PouringEventTypes);
 	
 	// Pair id of the event (combination of two unique runtime ids)
 	uint64 PairId;
@@ -33,6 +37,8 @@ public:
 
 	// Individual2 in Pouring
 	USLBaseIndividual* Individual2;
+
+	USLPouringEventTypes PouringEventTypes;
 
 	/* Begin IEvent interface */
 	// Create an owl representation of the event

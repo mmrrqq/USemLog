@@ -8,22 +8,26 @@
 // Constructor with initialization
 FSLPouringEvent::FSLPouringEvent(const FString& InId, float InStart, float InEnd, uint64 InPairId,
 	USLBaseIndividual* InIndividual1,
-	USLBaseIndividual* InIndividual2) :
+	USLBaseIndividual* InIndividual2,
+	USLPouringEventTypes PouringEventTypes) :
 	ISLEvent(InId, InStart, InEnd),
 	PairId(InPairId),
 	Individual1(InIndividual1), 
-	Individual2(InIndividual2)
+	Individual2(InIndividual2),
+	PouringEventTypes(PouringEventTypes)
 {
 }
 
 // Constructor initialization without end time
 FSLPouringEvent::FSLPouringEvent(const FString& InId, float InStart, uint64 InPairId,
 	USLBaseIndividual* InIndividual1,
-	USLBaseIndividual* InIndividual2) :
+	USLBaseIndividual* InIndividual2,
+	USLPouringEventTypes PouringEventTypes) :
 	ISLEvent(InId, InStart),
 	PairId(InPairId),
 	Individual1(InIndividual1),
-	Individual2(InIndividual2)
+	Individual2(InIndividual2),
+	PouringEventTypes(PouringEventTypes)
 {
 }
 
@@ -32,11 +36,13 @@ FSLPouringEvent::FSLPouringEvent(const FString& InId, float InStart, uint64 InPa
 FSLOwlNode FSLPouringEvent::ToOwlNode() const
 {
 	// Create the Pouring event node
+	FString EventName = "PouringSituation: " + FString(PouringEventTypes == USLPouringEventTypes::PouredInto ? "Poured in to" : "Poured out");
 	FSLOwlNode EventIndividual = FSLOwlExperimentStatics::CreateEventIndividual(
-		"log", Id, "PouringSituation");
+		"log", Id, EventName);
 	EventIndividual.AddChildNode(FSLOwlExperimentStatics::CreateStartTimeProperty("log", StartTime));
 	EventIndividual.AddChildNode(FSLOwlExperimentStatics::CreateEndTimeProperty("log", EndTime));
 	EventIndividual.AddChildNode(FSLOwlExperimentStatics::CreateInEpisodeProperty("log", EpisodeId));
+
 	return EventIndividual;
 }
 
@@ -58,7 +64,8 @@ void FSLPouringEvent::AddToOwlDoc(FSLOwlDoc* OutDoc)
 // Get event context data as string (ToString equivalent)
 FString FSLPouringEvent::Context() const
 {
-	return FString::Printf(TEXT("Pouring - %lld"), PairId);
+	FString EventType = PouringEventTypes == USLPouringEventTypes::PouredInto ? "Poured in to" : "Poured out";
+	return FString::Printf(TEXT("%s - %lld"), *EventType , PairId);
 }
 
 // Get the tooltip data

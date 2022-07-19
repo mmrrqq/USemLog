@@ -8,7 +8,6 @@
 #include "Events/SLSupportedByEvent.h"
 #include "Individuals/Type/SLBaseIndividual.h"
 #include "Utils/SLUuid.h"
-#include "Individuals/Type/SLParticleIndividual.h"
 
 
 // Set parent
@@ -110,15 +109,17 @@ bool FSLContactEventHandler::FinishContactEvent(USLBaseIndividual* InOther, floa
 				particlesOverlapEnded = particlesOverlapEnded + 1;
 				UE_LOG(LogTemp, Warning, TEXT("%d total particles overlapped.."),
 					particlesOverlapEnded);
+
+				// if for the last contact event, the end time is the pouring endtime
+				if (PouringEndTime < EndTime) {
+					PouringEndTime = EndTime;
+				}
 			}
 			
 			// Remove event from the pending list
 			EventItr.RemoveCurrent();
 			
-			// if for the last contact event, the end time is the pouring endtime
-			if (PouringEndTime < EndTime) {
-				PouringEndTime = EndTime;
-			}
+			
 
 			
 			
@@ -238,20 +239,32 @@ void FSLContactEventHandler::OnSLSupportedByEnd(const uint64 PairId1, const uint
 // Start new Pouring event
 void FSLContactEventHandler::AddNewPouringEvent(const FSLContactResult& InResult)
 {
-	// Start a semantic Pouring event
-
-	// TODO: gather how many particles show up.. then compare them with two different types of containers..
-
-	if (InResult.Other->GetClass() == USLParticleIndividual::StaticClass() && StartedPouringEvents.Num() == 0) {
-		// if there is already CurrPouredIndividual object then pouring is initiated
+	// Start a semantic Pouring event, check if the source container has required angles around X and Y axis in oder to consider it as source container
+	if (InResult.Other->GetClass() == USLParticleIndividual::StaticClass() && StartedPouringEvents.Num() == 0 &&
+		(InResult.Self->GetCachedPose().GetRotation().Euler().X > 45.00 || InResult.Self->GetCachedPose().GetRotation().Euler().Y > 45.00)) {
+		UE_LOG(LogTemp, Warning, TEXT("%s is the pose of the %s .."),
+			*InResult.Self->GetCachedPose().GetRotation().Euler().ToString(), *InResult.Self->GetInfo());
 		TSharedPtr<FSLPouringEvent> Event = MakeShareable(new FSLPouringEvent(
 			FSLUuid::NewGuidInBase64Url(), InResult.Time,
 			FSLUuid::PairEncodeCantor(InResult.Self->GetUniqueID(), InResult.Other->GetUniqueID()),
-			InResult.Self, InResult.Other));
+			InResult.Self, InResult.Other, USLPouringEventTypes::PouredOut));
 		Event->EpisodeId = EpisodeId;
 		// Add event to the pending Pourings array
 		StartedPouringEvents.Emplace(Event);
-	}
+
+	} else if (InResult.Other->GetClass() == USLParticleIndividual::StaticClass() && StartedPouringEvents.Num() == 0) {
+	// Start a semantic Pouring event, for destination container, we do not need to check such angles(as of now)
+			UE_LOG(LogTemp, Warning, TEXT("%s is the pose of the %s .."),
+				*InResult.Self->GetCachedPose().GetRotation().Euler().ToString(), *InResult.Self->GetInfo());
+			TSharedPtr<FSLPouringEvent> Event = MakeShareable(new FSLPouringEvent(
+				FSLUuid::NewGuidInBase64Url(), InResult.Time,
+				FSLUuid::PairEncodeCantor(InResult.Self->GetUniqueID(), InResult.Other->GetUniqueID()),
+				InResult.Self, InResult.Other, USLPouringEventTypes::PouredInto));
+			Event->EpisodeId = EpisodeId;
+			// Add event to the pending Pourings array
+			StartedPouringEvents.Emplace(Event);
+
+		}
 
 }
 
