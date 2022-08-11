@@ -19,8 +19,8 @@ UCLASS(ClassGroup = (SL), DisplayName = "SL World State Logger")
 class USEMLOG_API ASLWorldStateLogger : public AInfo
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	ASLWorldStateLogger();
 
@@ -93,40 +93,40 @@ private:
 protected:
 	// True when ready to log
 	UPROPERTY(VisibleAnywhere, Transient, Category = "Semantic Logger")
-	uint8 bIsInit : 1;
+		uint8 bIsInit : 1;
 
 	// True when active
 	UPROPERTY(VisibleAnywhere, Transient, Category = "Semantic Logger")
-	uint8 bIsStarted : 1;
+		uint8 bIsStarted : 1;
 
 	// True when done logging
 	UPROPERTY(VisibleAnywhere, Transient, Category = "Semantic Logger")
-	uint8 bIsFinished : 1;
+		uint8 bIsFinished : 1;
 
 private:
 	// If true the logger will start on its own (instead of being started by the manager)
 	UPROPERTY(EditAnywhere, Category = "Semantic Logger")
-	uint8 bUseIndependently : 1;
+		uint8 bUseIndependently : 1;
 
 	// Logger parameters
 	UPROPERTY(EditAnywhere, Category = "Semantic Logger", meta = (editcondition = "bUseIndependently"))
-	FSLWorldStateLoggerParams LoggerParameters;
+		FSLWorldStateLoggerParams LoggerParameters;
 
 	// Location parameters
 	UPROPERTY(EditAnywhere, Category = "Semantic Logger", meta = (editcondition = "bUseIndependently"))
-	FSLLoggerLocationParams LocationParameters;
+		FSLLoggerLocationParams LocationParameters;
 
 	// Database parameters
 	UPROPERTY(EditAnywhere, Category = "Semantic Logger", meta = (editcondition = "bUseIndependently"))
-	FSLLoggerDBServerParams DBServerParameters;
+		FSLLoggerDBServerParams DBServerParameters;
 
 	// Logger start parameters
 	UPROPERTY(EditAnywhere, Category = "Semantic Logger", meta = (editcondition = "bUseIndependently"))
-	FSLLoggerStartParams StartParameters;
+		FSLLoggerStartParams StartParameters;
 
 	// Access to all individuals in the world
 	UPROPERTY(VisibleAnywhere, Transient, Category = "Semantic Logger")
-	ASLIndividualManager* IndividualManager;
+		ASLIndividualManager* IndividualManager;
 
 	// Database handler
 	TSharedPtr<FSLWorldStateDBHandler> DBHandler;

@@ -17,7 +17,7 @@
 // Sets default values
 ASLWorldStateLogger::ASLWorldStateLogger()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 
@@ -341,7 +341,7 @@ bool ASLWorldStateLogger::SetIndividualManager()
 // First update call (log all individuals)
 void ASLWorldStateLogger::FirstUpdate()
 {
-	DBHandler->FirstWrite(GetWorld()->GetTimeSeconds());	
+	DBHandler->FirstWrite(GetWorld()->GetTimeSeconds());
 }
 
 // Log individuals which changed state

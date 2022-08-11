@@ -10,11 +10,11 @@
 class ASLVisionPoseableMeshActor;
 THIRD_PARTY_INCLUDES_START
 #if PLATFORM_WINDOWS
-	#include "Windows/AllowWindowsPlatformTypes.h"
-	#include <mongoc/mongoc.h>
-	#include "Windows/HideWindowsPlatformTypes.h"
+#include "Windows/AllowWindowsPlatformTypes.h"
+#include <mongoc/mongoc.h>
+#include "Windows/HideWindowsPlatformTypes.h"
 #else
-	#include <mongoc/mongoc.h>
+#include <mongoc/mongoc.h>
 #endif // #if PLATFORM_WINDOWS
 THIRD_PARTY_INCLUDES_END
 #endif //SL_WITH_LIBMONGO_C
@@ -91,7 +91,7 @@ private:
 
 private:
 	// DoWork function pointers
-	typedef int32 (FSLWorldStateDBWriterAsyncTask::*WriteTypeFunctionPtr)();
+	typedef int32(FSLWorldStateDBWriterAsyncTask::* WriteTypeFunctionPtr)();
 	WriteTypeFunctionPtr WriteFunctionPtr;
 
 	// Access to the individual manager
