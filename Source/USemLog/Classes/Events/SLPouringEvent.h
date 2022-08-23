@@ -40,6 +40,8 @@ public:
 
 	USLPouringEventTypes PouringEventTypes;
 
+	int NumberOfParticles = 0;
+
 	/* Begin IEvent interface */
 	// Create an owl representation of the event
 	virtual FSLOwlNode ToOwlNode() const override;

@@ -38,6 +38,14 @@
     {
       "Name": "UProtobuf",
       "Enabled": true
+    },
+    {
+      "Name": "UUtils",
+      "Enabled": true
+    },
+    {
+      "Name": "UTFPublisher",
+      "Enabled": true
     }
   ]
 }

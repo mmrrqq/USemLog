@@ -65,6 +65,10 @@ struct USEMLOG_API FSLOwlExperimentStatics
 	// Create inContact property
 	static FSLOwlNode CreateInContactProperty(
 		const FString& InDocPrefix, const FString& InObjId);
+	
+	// Create pouredParticles property
+	static FSLOwlNode CreatePouredParticlesProperty(
+		const FString& InDocPrefix, const int InObjId);
 
 	// Create isSupported property
 	static FSLOwlNode CreateIsSupportedProperty(

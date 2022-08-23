@@ -202,6 +202,7 @@ void FSLContactEventHandler::FinishAllEvents(float EndTime)
 		{
 			// Set end time and publish event
 			Ev->EndTime = PouringEndTime;
+			Ev->NumberOfParticles = particlesOverlapEnded;
 			OnSemanticEvent.ExecuteIfBound(Ev);
 		}
 	}

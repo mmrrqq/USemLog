@@ -10,11 +10,15 @@
 #include "Individuals/Type/SLVirtualBoneIndividual.h"
 #include "Individuals/Type/SLRobotIndividual.h"
 
+
 // UUtils
 #if SL_WITH_ROS_CONVERSIONS
 #include "Conversions.h"
 #endif // SL_WITH_ROS_CONVERSIONS
-
+#include "../../UUtils/Source/UConversions/Public/Conversions.h"
+#include <chrono>
+#include <ctime>
+#include <iomanip>
 
 //init seq
 int seq = 0;
@@ -177,9 +181,13 @@ int32 FSLWorldStateDBWriterAsyncTask::AddAllIndividuals(bson_t* doc)
 
 		BSON_APPEND_INT32(&header, "seq", seq);
 		seq = seq + 1;
-		bson_append_now_utc(&header, "stamp", -1);
-		BSON_APPEND_UTF8(&header, "frame_id", "map");
+		
+		//auto nowTime = std::chrono::system_clock::now();
+		//std::time_t now_time = std::chrono::system_clock::to_time_t(nowTime);
+		time_t     now = time(0);
+		bson_append_date_time(&header, "stamp", -1, now);
 
+		BSON_APPEND_UTF8(&header, "frame_id", "map");
 		bson_append_document_end(doc, &header);
 		//end header
 
@@ -197,7 +205,10 @@ int32 FSLWorldStateDBWriterAsyncTask::AddAllIndividuals(bson_t* doc)
 		AddPose(Individual->GetCachedPose(), doc);
 		//bson_append_document_end(&arr_obj, &individual_obj);
 
-		bson_append_now_utc(doc, "__recorded", -1);
+		//auto nowTime = std::chrono::system_clock::now();
+		//std::time_t now_time = std::chrono::system_clock::to_time_t(nowTime);
+
+		//bson_append_date_time(doc, "__recorded", -1, now_time);
 		BSON_APPEND_UTF8(doc, "topic", "tf");
 		arr_idx++;
 		Num++;
@@ -230,7 +241,10 @@ int32 FSLWorldStateDBWriterAsyncTask::AddIndividualsThatMoved(bson_t* doc)
 			BSON_APPEND_DOCUMENT_BEGIN(doc, "header", &header);
 			BSON_APPEND_INT32(&header, "seq", seq);
 			seq = seq + 1;
-			bson_append_now_utc(&header, "stamp", -1);
+			//auto nowTime = std::chrono::system_clock::now();
+		//std::time_t now_time = std::chrono::system_clock::to_time_t(nowTime);
+			time_t     now = time(0);
+			bson_append_date_time(&header, "stamp", -1, now);
 			BSON_APPEND_UTF8(&header, "frame_id", "map");
 			bson_append_document_end(doc, &header);
 			//end header
@@ -284,7 +298,10 @@ int32 FSLWorldStateDBWriterAsyncTask::AddSkeletalIndividals(bson_t* doc)
 		BSON_APPEND_DOCUMENT_BEGIN(doc, "header", &header);
 		BSON_APPEND_INT32(&header, "seq", seq);
 		seq = seq + 1;
-		bson_append_now_utc(&header, "stamp", -1);
+		//auto nowTime = std::chrono::system_clock::now();
+		//std::time_t now_time = std::chrono::system_clock::to_time_t(nowTime);
+		time_t     now = time(0);
+		bson_append_date_time(&header, "stamp", -1, now);
 		BSON_APPEND_UTF8(&header, "frame_id", "map");
 		bson_append_document_end(doc, &header);
 
@@ -338,7 +355,10 @@ void FSLWorldStateDBWriterAsyncTask::AddSkeletalBoneIndividuals(
 		BSON_APPEND_DOCUMENT_BEGIN(doc, "header", &header);
 		BSON_APPEND_INT32(&header, "seq", seq);
 		seq = seq + 1;
-		bson_append_now_utc(&header, "stamp", -1);
+		//auto nowTime = std::chrono::system_clock::now();
+		//std::time_t now_time = std::chrono::system_clock::to_time_t(nowTime);
+		time_t     now = time(0);
+		bson_append_date_time(&header, "stamp", -1, now);
 		BSON_APPEND_UTF8(&header, "frame_id", "map");
 		bson_append_document_end(doc, &header);
 
@@ -426,6 +446,8 @@ void FSLWorldStateDBWriterAsyncTask::AddPose(FTransform Pose, bson_t* doc)
 #if SL_WITH_ROS_CONVERSIONS
 	FConversions::UToROS(Pose);
 #endif // SL_WITH_ROS_CONVERSIONS
+	
+	FConversions::UToROS(Pose);
 
 	bson_t child_obj_loc;
 	bson_t child_obj_rot;
@@ -434,15 +456,15 @@ void FSLWorldStateDBWriterAsyncTask::AddPose(FTransform Pose, bson_t* doc)
 	BSON_APPEND_DOCUMENT_BEGIN(doc, "transform", &child_obj_trans);
 
 	BSON_APPEND_DOCUMENT_BEGIN(&child_obj_trans, "translation", &child_obj_loc);
-	BSON_APPEND_DOUBLE(&child_obj_loc, "x", Pose.GetLocation().X / 100);
-	BSON_APPEND_DOUBLE(&child_obj_loc, "y", -1 * Pose.GetLocation().Y / 100);
-	BSON_APPEND_DOUBLE(&child_obj_loc, "z", Pose.GetLocation().Z / 100);
+	BSON_APPEND_DOUBLE(&child_obj_loc, "x", Pose.GetLocation().X);
+	BSON_APPEND_DOUBLE(&child_obj_loc, "y", Pose.GetLocation().Y);
+	BSON_APPEND_DOUBLE(&child_obj_loc, "z", Pose.GetLocation().Z);
 	bson_append_document_end(&child_obj_trans, &child_obj_loc);
 
 	BSON_APPEND_DOCUMENT_BEGIN(&child_obj_trans, "rotation", &child_obj_rot);
-	BSON_APPEND_DOUBLE(&child_obj_rot, "x", -1 * Pose.GetRotation().X);
+	BSON_APPEND_DOUBLE(&child_obj_rot, "x", Pose.GetRotation().X);
 	BSON_APPEND_DOUBLE(&child_obj_rot, "y", Pose.GetRotation().Y);
-	BSON_APPEND_DOUBLE(&child_obj_rot, "z", -1 * Pose.GetRotation().Z);
+	BSON_APPEND_DOUBLE(&child_obj_rot, "z", Pose.GetRotation().Z);
 	BSON_APPEND_DOUBLE(&child_obj_rot, "w", Pose.GetRotation().W);
 	bson_append_document_end(&child_obj_trans, &child_obj_rot);
 	bson_append_document_end(doc, &child_obj_trans);
