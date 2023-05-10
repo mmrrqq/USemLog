@@ -1,5 +1,5 @@
 // Copyright 2017-present, Institute for Artificial Intelligence - University of Bremen
-// Author: Andrei Haidu (http://haidu.eu)
+// Author: Abijit Vyas
 
 #pragma once
 
@@ -8,31 +8,39 @@
 // Forward declarations
 class USLBaseIndividual;
 
+enum class USLPouringEventTypes
+{PouredInto,
+PouredOut
+};
 /**
-* Transport event class
+* Pouring event class
 */
-class FSLTransportEvent : public ISLEvent
+class FSLPouringEvent : public ISLEvent
 {
 public:
 	// Default constructor
-	FSLTransportEvent() = default;
+	FSLPouringEvent() = default;
 
 	// Constructor with initialization
-	FSLTransportEvent(const FString& InId, const float InStart, const float InEnd, const uint64 InPairId,
-		USLBaseIndividual* InManipulator, USLBaseIndividual* InIndividual);
+	FSLPouringEvent(const FString& InId, float InStart, float InEnd, uint64 InPairId,
+		USLBaseIndividual* InIndividual1, USLBaseIndividual* InIndividual2, USLPouringEventTypes PouringEventTypes);
 
 	// Constructor initialization without end time
-	FSLTransportEvent(const FString& InId, const float InStart, const uint64 InPairId,
-		USLBaseIndividual* InManipulator, USLBaseIndividual* InIndividual);
-
+	FSLPouringEvent(const FString& InId, const float InStart, const uint64 InPairId,
+		USLBaseIndividual* InIndividual1, USLBaseIndividual* InIndividual2, USLPouringEventTypes PouringEventTypes);
+	
 	// Pair id of the event (combination of two unique runtime ids)
 	uint64 PairId;
 
-	// Who is Transporting the object
-	USLBaseIndividual* Manipulator;
+	// Individual1 in Pouring
+	USLBaseIndividual* Individual1;
 
-	// The object Transported
-	USLBaseIndividual* Individual;
+	// Individual2 in Pouring
+	USLBaseIndividual* Individual2;
+
+	USLPouringEventTypes PouringEventTypes;
+
+	int NumberOfParticles = 0;
 
 	/* Begin IEvent interface */
 	// Create an owl representation of the event
@@ -40,7 +48,7 @@ public:
 
 	// Add the owl representation of the event to the owl document
 	virtual void AddToOwlDoc(FSLOwlDoc* OutDoc) override;
-
+	
 	// Send through ROSBridge
 	virtual FString ToROSQuery() const override { return ""; };
 
@@ -54,7 +62,7 @@ public:
 	virtual FString ToString() const override;
 
 	// Get the event type name
-	virtual FString TypeName() const override { return FString(TEXT("Transport")); };
+	virtual FString TypeName() const override { return FString(TEXT("Pouring")); };
 	/* End IEvent interface */
 
 	// Create REST call to KnowRob
