@@ -34,6 +34,7 @@ ASLLoggerManager::ASLLoggerManager()
 	bUseIndependently = false;
 	bLogWorldState = false;
 	bLogActionsAndEvents = false;
+	
 
 #if WITH_EDITORONLY_DATA
 	// Make manager sprite smaller (used to easily find the actor in the world)
@@ -101,6 +102,33 @@ void ASLLoggerManager::BeginPlay()
 			UE_LOG(LogTemp, Error, TEXT("%s::%d Logger (%s) StartImpl() will not be called.."),
 				*FString(__func__), __LINE__, *GetName());
 		}
+
+		// TODO1: move this call to the button pressed event in future
+		// TODO2: for multiple episode logging, one needs to update REST interface methods.
+		// call the NEEM rest API to create a new NEEM Episode
+		if (bCreateNEEM) {
+			// call create an episode once per game, check if it is already created 
+			if (!isEpisodeCreated) {
+				fSLKRRestClient.SendCreateEpisodeRequest();
+
+				//fSLSpeechRestClient.SendRecordAudioRequest();
+				
+
+				// get system time when game starts
+				//FDateTime timeUtc = FDateTime::UtcNow();
+				//int64 unixStart = timeUtc.ToUnixTimestamp() + timeUtc.GetSecond();
+				//UE_LOG(LogTemp, Display, TEXT("time found: %lld"), unixStart); // log time
+				// the Unix time stamp should be in seconds hence further divide this time by 1000
+				//fSLKRRestClient.SetGameStartUnixTime(unixStart);
+
+				EpisodeIriResponse = fSLKRRestClient.getEpisodeIri();
+				ActionIriResponse = fSLKRRestClient.getActionIri();
+
+				isEpisodeCreated = true;
+			}
+
+		}
+
 	}	
 }
 
@@ -111,7 +139,19 @@ void ASLLoggerManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 	if (!bIsFinished)
 	{
+		
+
+		// Finish rest of the methods
 		Finish();
+
+		// first finish the NEEM Episode so that unnecessary tf messages do not get logged.
+		if (isEpisodeCreated) {
+			const TCHAR* Status = EHttpRequestStatus::ToString(fSLKRRestClient.SendFinishEpisodeRequest());
+
+			//const TCHAR* Status = EHttpRequestStatus::ToString(fSLSpeechRestClient.SendStopAudioRequest());
+			UE_LOG(LogTemp, Display, TEXT("Episode finish request response status: %s"), Status);
+		}
+
 	}
 }
 
@@ -199,6 +239,8 @@ void ASLLoggerManager::Init()
 		}
 	}
 
+	// initialize fSLKRRestClient with URL parameters
+	fSLKRRestClient.Init(*GetKnowRobIpAddress(), *GetKnowRobServerPort(), "", *GetGamePlayerName());
 
 	bIsInit = true;
 	UE_LOG(LogTemp, Log, TEXT("%s::%d Logger manager (%s) succesfully initialized at %f.."),
@@ -208,6 +250,16 @@ void ASLLoggerManager::Init()
 // Start logging
 void ASLLoggerManager::Start()
 {
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		if (UInputComponent* IC = PC->InputComponent)
+		{
+			IC->BindAction(StartParams.UserInputAudioStartActionName, IE_Pressed, this, &ASLLoggerManager::AudioStart);
+			IC->BindAction(StartParams.UserInputAudioStopActionName, IE_Pressed, this, &ASLLoggerManager::AudioStop);
+			//IC->BindAction(StartParams.UserInputAudioActionName, IE_Pressed, this, &ASLLoggerManager::UserInputToggleCallback);
+		}
+	}
+
 	if (bIsStarted)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s::%d Logger manager (%s) is already started.."), *FString(__FUNCTION__), __LINE__, *GetName());
@@ -252,6 +304,19 @@ void ASLLoggerManager::Start()
 		*FString(__FUNCTION__), __LINE__, *GetName(), GetWorld()->GetTimeSeconds());
 }
 
+void ASLLoggerManager::AudioStart()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Audio RECORDING"));
+	fSLSpeechRestClient.SendRecordAudioRequest();
+}
+
+void ASLLoggerManager::AudioStop()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Audio STOPPED RECORDING"));
+	const TCHAR* Status = EHttpRequestStatus::ToString(fSLSpeechRestClient.SendStopAudioRequest());
+	UE_LOG(LogTemp, Display, TEXT("Episode finish request response status: %s"), Status);
+}
+
 // Finish logging
 void ASLLoggerManager::Finish(bool bForced)
 {
@@ -274,7 +339,7 @@ void ASLLoggerManager::Finish(bool bForced)
 
 	if (bLogActionsAndEvents)
 	{
-		SymbolicLogger->Finish();
+		SymbolicLogger->Finish(true);
 	}
 
 	bIsStarted = false;
@@ -351,6 +416,7 @@ bool ASLLoggerManager::SetSymbolicLogger()
 {
 	if (SymbolicLogger && SymbolicLogger->IsValidLowLevel() && !SymbolicLogger->IsPendingKillOrUnreachable())
 	{
+		SymbolicLogger->SetSLKRRestClient(&fSLKRRestClient);
 		return true;
 	}
 
@@ -359,6 +425,7 @@ bool ASLLoggerManager::SetSymbolicLogger()
 		if ((*Iter)->IsValidLowLevel() && !(*Iter)->IsPendingKillOrUnreachable())
 		{
 			SymbolicLogger = *Iter;
+			SymbolicLogger->SetSLKRRestClient(&fSLKRRestClient);
 			return true;
 		}
 	}
@@ -370,6 +437,8 @@ bool ASLLoggerManager::SetSymbolicLogger()
 #if WITH_EDITOR
 	SymbolicLogger->SetActorLabel(TEXT("SL_SymbolicLogger"));
 #endif // WITH_EDITOR
+
+	SymbolicLogger->SetSLKRRestClient(&fSLKRRestClient);
 	return true;
 }
 

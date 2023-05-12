@@ -114,6 +114,11 @@ void ASLSymbolicLogger::BeginPlay()
 				*FString(__func__), __LINE__, *GetName());
 		}
 	}
+
+	// TODO: use it when we shift NEEM logging with button pressed. 
+	// get system time when game starts
+	/*FDateTime timeUtc = FDateTime::UtcNow();
+	GameStartUnixTime = timeUtc.ToUnixTimestamp() + timeUtc.GetSecond();*/
 }
 
 // Called when actor removed from game or game ended
@@ -410,6 +415,10 @@ void ASLSymbolicLogger::FinishImpl(bool bForced)
 		{
 			Ev->AddToOwlDoc(ExperimentDoc.Get());
 			SubActionIds.Add(Ev->Id);
+
+			// Make rest call to knowrob sending Event as sub Action
+			Ev->RESTCallToKnowRob(fSLKRRestClient);
+			
 		}
 
 		// Add stored unique timepoints to doc
@@ -837,5 +846,10 @@ void ASLSymbolicLogger::InitROSPublisher()
 	ROSPrologClient->Init(WriterParams.ServerIp, WriterParams.ServerPort);
 	FSLEntitiesManager::GetInstance()->SetPrologClient(ROSPrologClient);
 #endif // SL_WITH_ROSBRIDGE
+}
+
+void ASLSymbolicLogger::SetSLKRRestClient(FSLKRRestClient* InFSLKRRestClient)
+{
+	fSLKRRestClient = InFSLKRRestClient;
 }
 

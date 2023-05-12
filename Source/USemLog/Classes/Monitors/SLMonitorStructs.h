@@ -19,6 +19,8 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FSLBeginContactSignature, const FSLContactRe
 /** Delegate to notify that a contact ended between two semantically annotated objects */
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FSLEndContactSignature, USLBaseIndividual* /*Self*/, USLBaseIndividual* /*Other*/, float /*Time*/);
 
+
+
 /************************************************************************/
 /*                       STRUCTS                                        */
 /************************************************************************/
