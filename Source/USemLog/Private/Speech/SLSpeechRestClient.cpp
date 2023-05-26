@@ -153,9 +153,53 @@ EHttpRequestStatus::Type FSLSpeechRestClient::SendStopAudioRequest() {
                             //Get the value of the json object by field name
                             //ActionIri = JsonObject->GetStringField("Action");
                             //EpisodeIri = JsonObject->GetStringField("Episode");
-                            FString message = JsonObject->GetStringField("transcription");
-                            UE_LOG(LogTemp, Warning, TEXT("JSON Content Received : %s"),*message);
-                            GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Transcription: %s"), *message));
+                            
+                            //FString message = JsonObject->GetStringField("transcription");
+                            //UE_LOG(LogTemp, Warning, TEXT("JSON Content Received : %s"),*message);
+                            //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Transcription: %s"), *message));
+                            //Transcription = message;
+
+                            FString message1;
+                            const TArray<TSharedPtr<FJsonValue>> m1=  JsonObject->GetArrayField("transcription");
+                            TArray<TMap<FString, FString>> contentlist;
+                            for (int32 index = 0; index < m1.Num(); index++)
+                            {                              
+                                TSharedPtr<FJsonObject> obj = m1[index]->AsObject();
+                                FString Sentence = obj->GetStringField("sentence");
+                                FString SysStartTime = obj->GetStringField("system_start_time");
+                                FString SysEndTime = obj->GetStringField("system_end_time");
+                                FString UNIXStartTime = obj->GetStringField("UNIX_start_time");
+                                FString UNIXEndTime = obj->GetStringField("UNIX_end_time");
+                                UE_LOG(LogTemp, Warning, TEXT("JSON Content Received : %s, %s, %s, %s, %s"),*Sentence,*SysStartTime,*SysEndTime,*UNIXStartTime, *UNIXEndTime);
+                                GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Sentence: %s, StartTime:%s, EndTime:%s, UNIXStart:%s, UNIXEnd:%s"),
+                                    *Sentence,*SysStartTime,*SysEndTime,*UNIXStartTime,*UNIXEndTime));
+                                Message.Add(TEXT("Sentence"), Sentence);
+                                Message.Add(TEXT("SysStartTime"), SysStartTime);
+                                Message.Add(TEXT("SysEndTime"), SysEndTime);
+                                Message.Add(TEXT("UNIXStartTime"), UNIXStartTime);
+                                Message.Add(TEXT("UNIXEndTime"), UNIXEndTime);
+                                message1 = Sentence + SysStartTime + SysEndTime+ "\n";
+                                contentlist.Add(Message);
+                            }
+                            Transcription = message1;
+                            Total.Add(TEXT("Transcription"), contentlist);
+
+                            //Printing The Contents in Total Variable
+                            //for (const TPair<FString, TArray<TMap<FString, FString>>>& trans : Total)
+                            //{
+                            //    FString key = trans.Key;
+                            //    TArray<TMap<FString, FString>> v1 = trans.Value;
+                            //    for (int32 index = 0; index < v1.Num(); index++)
+                            //    {
+                            //        for (const TPair<FString, FString>& trans2 : v1[index])
+                            //        {
+                            //            GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Transcription FOUND: %s : %s"), *trans2.Key, *trans2.Value));
+                            //            //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Transcription FOUND: %s"), ));
+                            //        }
+                            //    }
+                            //}
+                                         
+                            
                             // Right now we are getting GameStartTime from KnowRob(linux side), 
                             // if the tfs are missmatched then sync both PC times 
                             //GameStartUnixTime = double(JsonObject->GetNumberField("Time"));

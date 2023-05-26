@@ -47,6 +47,15 @@ public:
 
 	//void SendCreateSubActionRequest(FString SubActionType, FString TaskType, 
 		//FString ObjectsPartcipated, double StartTime, double EndTime);
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	FString Transcription;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	TMap<FString, FString> Message;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TMap<FString, TArray<TMap<FString, FString>>> Total;
 
 private:
 	

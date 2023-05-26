@@ -144,6 +144,9 @@ void ASLLoggerManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		// Finish rest of the methods
 		Finish();
 
+		//Stop Speech Recording when Game is Ended
+		ASLLoggerManager::AudioStop();
+
 		// first finish the NEEM Episode so that unnecessary tf messages do not get logged.
 		if (isEpisodeCreated) {
 			const TCHAR* Status = EHttpRequestStatus::ToString(fSLKRRestClient.SendFinishEpisodeRequest());
@@ -314,6 +317,8 @@ void ASLLoggerManager::AudioStop()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Audio STOPPED RECORDING"));
 	const TCHAR* Status = EHttpRequestStatus::ToString(fSLSpeechRestClient.SendStopAudioRequest());
+	//TMap<FString, TArray<TMap<FString, FString>>> Transcription = fSLSpeechRestClient.Total;
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Transcription FOUND: %s"), *(fSLSpeechRestClient.Message)));
 	UE_LOG(LogTemp, Display, TEXT("Episode finish request response status: %s"), Status);
 }
 
