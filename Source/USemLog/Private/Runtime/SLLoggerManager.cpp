@@ -274,7 +274,7 @@ void ASLLoggerManager::Start()
 		SymbolicLogger->Start();
 		
 		// set the SLKRRestClient with all appropreate parameters to connect with KnowRob
-		SLRestModuleAgentClass->SetSLKRRestClient(&fSLKRRestClient);
+		SymbolicLogger->SetSLKRRestClient(&fSLKRRestClient);
 
 		if (!SymbolicLogger->IsStarted())
 		{
