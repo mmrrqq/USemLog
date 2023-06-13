@@ -7,12 +7,14 @@
 #include "GameFramework/Info.h"
 #include "Runtime/SLLoggerStructs.h"
 #include "Knowrob/SLKRRestClient.h"
+#include "Actors/SLRestModuleAgentClass.h"
 #include "SLLoggerManager.generated.h"
 
 
 // Forward declarations
 class ASLWorldStateLogger;
 class ASLSymbolicLogger;
+class ASLRestModuleAgentClass;
 
 UCLASS(ClassGroup = (SL), DisplayName = "SL Logger Manager")
 class USEMLOG_API ASLLoggerManager : public AInfo
@@ -185,6 +187,9 @@ private:
 	// World state logger (if nullptr at runtime the reference will be searched for, or a new one will be spawned)
 	UPROPERTY(VisibleAnywhere, Category = "Semantic Logger|Symbolic Logger", meta = (editcondition = "bLogActionsAndEvents"))
 	ASLSymbolicLogger* SymbolicLogger;
+
+	UPROPERTY(VisibleAnywhere, Category = "Semantic Logger|Symbolic Logger", meta = (editcondition = "bLogActionsAndEvents"))
+	ASLRestModuleAgentClass* SLRestModuleAgentClass;
 
 	// World state logger parameters used for logging
 	UPROPERTY(EditAnywhere, Category = "Semantic Logger|Symbolic Logger", meta = (editcondition = "bLogActionsAndEvents"))

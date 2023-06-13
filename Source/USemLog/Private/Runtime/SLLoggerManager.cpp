@@ -135,20 +135,14 @@ void ASLLoggerManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 	if (!bIsFinished)
 	{
-		
-
 		// Finish rest of the methods
 		Finish();
 
-		// first finish the NEEM Episode so that unnecessary tf messages do not get logged.
+		// finish the NEEM Episode
 		if (isEpisodeCreated) {
 			const TCHAR* Status = EHttpRequestStatus::ToString(fSLKRRestClient.SendFinishEpisodeRequest());
 			UE_LOG(LogTemp, Display, TEXT("Episode finish request response status: %s"), Status);
 		}
-		
-
-
-
 	}
 }
 
@@ -278,6 +272,10 @@ void ASLLoggerManager::Start()
 	if (bLogActionsAndEvents)
 	{
 		SymbolicLogger->Start();
+		
+		// set the SLKRRestClient with all appropreate parameters to connect with KnowRob
+		SLRestModuleAgentClass->SetSLKRRestClient(&fSLKRRestClient);
+
 		if (!SymbolicLogger->IsStarted())
 		{
 			UE_LOG(LogTemp, Error, TEXT("%s::%d Logger manager (%s) symbolic logger (%s) could not be started, aborting start.."),
