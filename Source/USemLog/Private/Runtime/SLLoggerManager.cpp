@@ -119,7 +119,7 @@ void ASLLoggerManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		ASLLoggerManager::AudioStop();
 
 		// first finish the NEEM Episode so that unnecessary tf messages do not get logged.
-		if (isEpisodeCreated) {
+		if (isEpisodeCreated && !isEpisodeFinished) {
 			const TCHAR* Status = EHttpRequestStatus::ToString(fSLKRRestClient.SendFinishEpisodeRequest());
 
 			//const TCHAR* Status = EHttpRequestStatus::ToString(fSLSpeechRestClient.SendStopAudioRequest());
@@ -312,6 +312,16 @@ void ASLLoggerManager::AudioStart()
 
 void ASLLoggerManager::AudioStop()
 {
+
+	// first finish the NEEM Episode so that unnecessary tf messages do not get logged.
+	if (isEpisodeCreated && !isEpisodeFinished) {
+		const TCHAR* Status = EHttpRequestStatus::ToString(fSLKRRestClient.SendFinishEpisodeRequest());
+		isEpisodeFinished = true;
+
+		//const TCHAR* Status = EHttpRequestStatus::ToString(fSLSpeechRestClient.SendStopAudioRequest());
+		UE_LOG(LogTemp, Display, TEXT("Episode finish request response status: %s"), Status);
+	}
+
 	UE_LOG(LogTemp, Warning, TEXT("Audio STOPPED RECORDING"));
 	const TCHAR* Status = EHttpRequestStatus::ToString(fSLSpeechRestClient.SendStopAudioRequest());
 	//TMap<FString, TArray<TMap<FString, FString>>> Transcription = fSLSpeechRestClient.Total;

@@ -22,7 +22,7 @@ FSLSpeechRestClient::~FSLSpeechRestClient()
     //URL = InHost + TEXT(":") + InPort;
     
 
-    //GameParticipant = TEXT("dul:'") + GameUser + TEXT("'");
+    //GameParticipant = GameUser;
     
     //IsConnected();
 

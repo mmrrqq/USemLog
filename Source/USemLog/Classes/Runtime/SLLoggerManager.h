@@ -209,6 +209,8 @@ private:
 
 	bool isEpisodeCreated = false;
 
+	bool isEpisodeFinished = false;
+
 	FSLKRRestClient fSLKRRestClient;
 
 	FSLSpeechRestClient fSLSpeechRestClient;

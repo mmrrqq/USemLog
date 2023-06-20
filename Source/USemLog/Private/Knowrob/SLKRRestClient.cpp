@@ -20,7 +20,7 @@ void FSLKRRestClient::Init(const FString& InHost, const FString& InPort, const F
     //URL = TEXT("172.31.115.208:62226/knowrob/api/v1.0/query");
     URL = InHost + TEXT(":") + InPort + TEXT("/knowrob/api/v1.0/");
 
-    GameParticipant = TEXT("dul:'") + GameUser + TEXT("'");
+    GameParticipant = GameUser;
     
     IsConnected();
 
