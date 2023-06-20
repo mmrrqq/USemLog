@@ -116,6 +116,12 @@ struct FSLLoggerStartParams
 	// Action name for starting from user input (if ESLLoggerStartTime::FromUserInput is selected)
 	UPROPERTY(EditAnywhere, Category = "Semantic Logger", meta = (editcondition = "StartTime==ESLLoggerStartTime::FromUserInput"))
 	FName UserInputActionName = TEXT("SLTrigger");
+
+	UPROPERTY(EditAnywhere, Category = "Semantic Logger")
+	FName UserInputAudioStartActionName = TEXT("SLAudioStartTrigger");
+
+	UPROPERTY(EditAnywhere, Category = "Semantic Logger")
+	FName UserInputAudioStopActionName = TEXT("SLAudioStopTrigger");
 };
 
 /* Holds the data needed to setup the world state logger */

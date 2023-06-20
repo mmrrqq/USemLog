@@ -110,6 +110,9 @@ void ASLLoggerManager::BeginPlay()
 			// call create an episode once per game, check if it is already created 
 			if (!isEpisodeCreated) {
 				fSLKRRestClient.SendCreateEpisodeRequest();
+
+				//fSLSpeechRestClient.SendRecordAudioRequest();
+				
 				// get system time when game starts
 				//FDateTime timeUtc = FDateTime::UtcNow();
 				//int64 unixStart = timeUtc.ToUnixTimestamp() + timeUtc.GetSecond();
@@ -138,11 +141,17 @@ void ASLLoggerManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		// Finish rest of the methods
 		Finish();
 
-		// finish the NEEM Episode
+		//Stop Speech Recording when Game is Ended
+		ASLLoggerManager::AudioStop();
+
+		// first finish the NEEM Episode so that unnecessary tf messages do not get logged.
 		if (isEpisodeCreated) {
 			const TCHAR* Status = EHttpRequestStatus::ToString(fSLKRRestClient.SendFinishEpisodeRequest());
+
+			//const TCHAR* Status = EHttpRequestStatus::ToString(fSLSpeechRestClient.SendStopAudioRequest());
 			UE_LOG(LogTemp, Display, TEXT("Episode finish request response status: %s"), Status);
 		}
+
 	}
 }
 
@@ -241,6 +250,16 @@ void ASLLoggerManager::Init()
 // Start logging
 void ASLLoggerManager::Start()
 {
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		if (UInputComponent* IC = PC->InputComponent)
+		{
+			IC->BindAction(StartParams.UserInputAudioStartActionName, IE_Pressed, this, &ASLLoggerManager::AudioStart);
+			IC->BindAction(StartParams.UserInputAudioStopActionName, IE_Pressed, this, &ASLLoggerManager::AudioStop);
+			//IC->BindAction(StartParams.UserInputAudioActionName, IE_Pressed, this, &ASLLoggerManager::UserInputToggleCallback);
+		}
+	}
+
 	if (bIsStarted)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s::%d Logger manager (%s) is already started.."), *FString(__FUNCTION__), __LINE__, *GetName());
@@ -287,6 +306,21 @@ void ASLLoggerManager::Start()
 	bIsStarted = true;
 	UE_LOG(LogTemp, Log, TEXT("%s::%d Logger manager (%s) succesfully started at %f.."),
 		*FString(__FUNCTION__), __LINE__, *GetName(), GetWorld()->GetTimeSeconds());
+}
+
+void ASLLoggerManager::AudioStart()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Audio RECORDING"));
+	fSLSpeechRestClient.SendRecordAudioRequest();
+}
+
+void ASLLoggerManager::AudioStop()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Audio STOPPED RECORDING"));
+	const TCHAR* Status = EHttpRequestStatus::ToString(fSLSpeechRestClient.SendStopAudioRequest());
+	//TMap<FString, TArray<TMap<FString, FString>>> Transcription = fSLSpeechRestClient.Total;
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Transcription FOUND: %s"), *(fSLSpeechRestClient.Message)));
+	UE_LOG(LogTemp, Display, TEXT("Episode finish request response status: %s"), Status);
 }
 
 // Finish logging

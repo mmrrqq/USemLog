@@ -8,6 +8,7 @@
 #include "Runtime/SLLoggerStructs.h"
 #include "Knowrob/SLKRRestClient.h"
 #include "Actors/SLRestModuleAgentClass.h"
+#include "Speech/SLSpeechRestClient.h"
 #include "SLLoggerManager.generated.h"
 
 
@@ -115,6 +116,9 @@ public:
 	// Check if the manager is running independently
 	bool IsRunningIndependently() const { return bUseIndependently; };
 
+	void AudioStart();
+	void AudioStop();
+
 protected:
 	// Setup user input bindings
 	void SetupInputBindings();
@@ -206,6 +210,8 @@ private:
 	bool isEpisodeCreated = false;
 
 	FSLKRRestClient fSLKRRestClient;
+
+	FSLSpeechRestClient fSLSpeechRestClient;
 
 	FString EpisodeIriResponse;
 
