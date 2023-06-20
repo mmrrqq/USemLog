@@ -102,32 +102,6 @@ void ASLLoggerManager::BeginPlay()
 			UE_LOG(LogTemp, Error, TEXT("%s::%d Logger (%s) StartImpl() will not be called.."),
 				*FString(__func__), __LINE__, *GetName());
 		}
-
-		// TODO1: move this call to the button pressed event in future
-		// TODO2: for multiple episode logging, one needs to update REST interface methods.
-		// call the NEEM rest API to create a new NEEM Episode
-		if (bCreateNEEM) {
-			// call create an episode once per game, check if it is already created 
-			if (!isEpisodeCreated) {
-				fSLKRRestClient.SendCreateEpisodeRequest();
-
-				//fSLSpeechRestClient.SendRecordAudioRequest();
-				
-				// get system time when game starts
-				//FDateTime timeUtc = FDateTime::UtcNow();
-				//int64 unixStart = timeUtc.ToUnixTimestamp() + timeUtc.GetSecond();
-				//UE_LOG(LogTemp, Display, TEXT("time found: %lld"), unixStart); // log time
-				// the Unix time stamp should be in seconds hence further divide this time by 1000
-				//fSLKRRestClient.SetGameStartUnixTime(unixStart);
-
-				EpisodeIriResponse = fSLKRRestClient.getEpisodeIri();
-				ActionIriResponse = fSLKRRestClient.getActionIri();
-
-				isEpisodeCreated = true;
-			}
-
-		}
-
 	}	
 }
 
@@ -310,6 +284,28 @@ void ASLLoggerManager::Start()
 
 void ASLLoggerManager::AudioStart()
 {
+
+	// call the NEEM rest API to create a new NEEM Episode
+	if (bCreateNEEM) {
+		// call create an episode once per game, check if it is already created 
+		if (!isEpisodeCreated) {
+			UE_LOG(LogTemp, Warning, TEXT("NEEM RECORDING STARTED!!!"));
+			fSLKRRestClient.SendCreateEpisodeRequest();
+
+			// get system time when game starts
+			//FDateTime timeUtc = FDateTime::UtcNow();
+			//int64 unixStart = timeUtc.ToUnixTimestamp() + timeUtc.GetSecond();
+			//UE_LOG(LogTemp, Display, TEXT("time found: %lld"), unixStart); // log time
+			// the Unix time stamp should be in seconds hence further divide this time by 1000
+			//fSLKRRestClient.SetGameStartUnixTime(unixStart);
+
+			EpisodeIriResponse = fSLKRRestClient.getEpisodeIri();
+			ActionIriResponse = fSLKRRestClient.getActionIri();
+
+			isEpisodeCreated = true;
+		}
+
+	}
 	UE_LOG(LogTemp, Warning, TEXT("Audio RECORDING"));
 	fSLSpeechRestClient.SendRecordAudioRequest();
 }
@@ -320,7 +316,7 @@ void ASLLoggerManager::AudioStop()
 	const TCHAR* Status = EHttpRequestStatus::ToString(fSLSpeechRestClient.SendStopAudioRequest());
 	//TMap<FString, TArray<TMap<FString, FString>>> Transcription = fSLSpeechRestClient.Total;
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Transcription FOUND: %s"), *(fSLSpeechRestClient.Message)));
-	UE_LOG(LogTemp, Display, TEXT("Episode finish request response status: %s"), Status);
+	UE_LOG(LogTemp, Display, TEXT("Audio Stop request response status: %s"), Status);
 }
 
 // Finish logging
