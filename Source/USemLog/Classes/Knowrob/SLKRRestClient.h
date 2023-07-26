@@ -44,6 +44,9 @@ public:
 	void SendCreateSubActionRequest(FString SubActionType, FString TaskType, 
 		FString ObjectsPartcipated, double StartTime, double EndTime);
 
+	void SendPouringAdditionalRequest(FString SubActionType, FString MaxPouringAngle, FString MinPouringAngle,
+		FString SourceContainer, FString DestinationContainer, FString PouringPose);
+
 private:
 	
 	FString URL;

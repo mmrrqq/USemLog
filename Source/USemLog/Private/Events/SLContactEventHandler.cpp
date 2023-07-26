@@ -116,11 +116,17 @@ bool FSLContactEventHandler::FinishContactEvent(USLBaseIndividual* InOther, floa
 				OnSemanticEvent.ExecuteIfBound(*EventItr);
 			}
 			
-			// find out how many particles are ending overlap with source container
+			
 			if ((*EventItr)->Individual2->GetClass() == USLParticleIndividual::StaticClass()) {
+				// find out how many particles are ending overlap with source container
 				particlesOverlapEnded = particlesOverlapEnded + 1;
-				UE_LOG(LogTemp, Warning, TEXT("%d total particles overlapped.."),
-					particlesOverlapEnded);
+
+				// find out if the last particle that is dropped from the source container is it 5 seconds ago?
+				// Then remove current pouring event from the List of events and create new Pouring event
+				
+
+				//UE_LOG(LogTemp, Warning, TEXT("%d total particles overlapped.."),
+				//	particlesOverlapEnded);
 			}
 
 			// Remove event from the pending list
@@ -210,6 +216,8 @@ void FSLContactEventHandler::FinishAllEvents(float EndTime)
 			// Set end time and publish event
 			Ev->EndTime = PouringEndTime;
 			Ev->NumberOfParticles = particlesOverlapEnded;
+			Ev->PouringPoseForSourceContainer = PouringPoseForSourceContainer;
+			Ev->PouringPoseForDestinationContainer = PouringPoseForDestinationContainer;
 			OnSemanticEvent.ExecuteIfBound(Ev);
 		}
 	}
@@ -220,40 +228,74 @@ void FSLContactEventHandler::FinishAllEvents(float EndTime)
 void FSLContactEventHandler::AddNewPouringEvent(const FSLContactResult& InResult)
 {
 	// find out the angle of the containers and define which one is the source and which one is the destination container
-	float sourceContainerEulerXAngle = InResult.Self->GetCachedPose().GetRotation().Euler().X;
-	float sourceContainerEulerYAngle = InResult.Self->GetCachedPose().GetRotation().Euler().Y;
+	float ContainerEulerXAngle = InResult.Self->GetCachedPose().GetRotation().Euler().X;
+	float ContainerEulerYAngle = InResult.Self->GetCachedPose().GetRotation().Euler().Y;
 
+	FVector rot = InResult.Self->GetCachedPose().GetRotation().Euler();
+
+	FVector pose = InResult.Self->GetCachedPose().GetTranslation();
+	//std::tuple<float, float> PouringAngleForSourceContainer{ sourceContainerEulerXAngle, sourceContainerEulerYAngle};
 	// Start a semantic Pouring event, check if the source container has required angles around X and Y axis in oder to consider it as source container
-	// TODO: remove condition StartedPouringEvents.Num() == 0 when you want to log multiple pouring events per episode
-	if (InResult.Other->GetClass() == USLParticleIndividual::StaticClass() && StartedPouringEvents.Num() == 0 &&
-		(sourceContainerEulerXAngle > 45.00 || sourceContainerEulerXAngle < -45.00 || sourceContainerEulerYAngle > 45.00 || sourceContainerEulerYAngle < -45.00)) {
-		UE_LOG(LogTemp, Warning, TEXT("%s is the pose of the %s .."),
-			*InResult.Self->GetCachedPose().GetRotation().Euler().ToString(), *InResult.Self->GetInfo());
-		TSharedPtr<FSLPouringEvent> Event = MakeShareable(new FSLPouringEvent(
-			FSLUuid::NewGuidInBase64Url(), InResult.Time,
-			FSLUuid::PairEncodeCantor(InResult.Self->GetUniqueID(), InResult.Other->GetUniqueID()),
-			InResult.Self, InResult.Other, USLPouringEventTypes::PouredOut));
-		Event->EpisodeId = EpisodeId;
-		// Add event to the pending Pourings array
-		StartedPouringEvents.Emplace(Event);
-
-	}
-	else if (InResult.Other->GetClass() == USLParticleIndividual::StaticClass() && StartedPouringEvents.Num() == 0) {
-		// TODO: remove condition StartedPouringEvents.Num() == 0 when you want to log multiple pouring events per episode
+	if (InResult.Other->GetClass() == USLParticleIndividual::StaticClass() &&
+		(ContainerEulerXAngle > 45.00 || ContainerEulerXAngle < -45.00 
+			|| ContainerEulerYAngle > 45.00 || ContainerEulerYAngle < -45.00)) {
+		// TODO: find out logic other than this to include multiple pouring events
+		// TODO: Perform logic based upon time, ie how many particles are poured in a given second? And how long pouring event should be?
+		// Is there a way for combining contineous pouring events? 
+		if (StartedPouringEvents.Num() == 0 || SourceContainerName != InResult.Self->GetClassValue()) {
+		//if (StartedPouringEvents.Num() == 0 || !HasPouringEventHappened(SourceContainers, InResult)) {
+			TSharedPtr<FSLPouringEvent> Event = MakeShareable(new FSLPouringEvent(
+				FSLUuid::NewGuidInBase64Url(), InResult.Time,
+				FSLUuid::PairEncodeCantor(InResult.Self->GetUniqueID(), InResult.Other->GetUniqueID()),
+				InResult.Self, InResult.Other, USLPouringEventTypes::PouredOut, InResult.Self->GetClassValue()));
+			Event->EpisodeId = EpisodeId;
+			// Add event to the pending Pourings array
+			StartedPouringEvents.Emplace(Event);
+			SourceContainers.Emplace(InResult.Self->GetClassValue());
+			SourceContainerName = InResult.Self->GetClassValue();
+		}
+		// Add current pose for source container to the list of tuples
+		PouringPoseForSourceContainer.Add({SourceContainerName, InResult.Self->GetCachedPose() });
 		
-		// Start a semantic Pouring event, for destination container, we do not need to check such angles(as of now)
-		UE_LOG(LogTemp, Warning, TEXT("%s is the pose of the %s .."),
-			*InResult.Self->GetCachedPose().GetRotation().Euler().ToString(), *InResult.Self->GetInfo());
-		TSharedPtr<FSLPouringEvent> Event = MakeShareable(new FSLPouringEvent(
-			FSLUuid::NewGuidInBase64Url(), InResult.Time,
-			FSLUuid::PairEncodeCantor(InResult.Self->GetUniqueID(), InResult.Other->GetUniqueID()),
-			InResult.Self, InResult.Other, USLPouringEventTypes::PouredInto));
-		Event->EpisodeId = EpisodeId;
-		// Add event to the pending Pourings array
-		StartedPouringEvents.Emplace(Event);
+		
+	}
+	else if (InResult.Other->GetClass() == USLParticleIndividual::StaticClass() &&
+		(ContainerEulerXAngle < 45.00 || ContainerEulerXAngle > -45.00
+			|| ContainerEulerYAngle < 45.00 || ContainerEulerYAngle > -45.00)) {
+		// Start a semantic Pouring event, for destination container
+		
+		// TODO: find out logic other than this to include multiple pouring events
+		if (StartedPouringEvents.Num() == 0 || DestinationContainerName != InResult.Self->GetClassValue()) {
+			TSharedPtr<FSLPouringEvent> Event = MakeShareable(new FSLPouringEvent(
+				FSLUuid::NewGuidInBase64Url(), InResult.Time,
+				FSLUuid::PairEncodeCantor(InResult.Self->GetUniqueID(), InResult.Other->GetUniqueID()),
+				InResult.Self, InResult.Other, USLPouringEventTypes::PouredInto, InResult.Self->GetClassValue()));
+			Event->EpisodeId = EpisodeId;
+			// Add event to the pending Pourings array
+			StartedPouringEvents.Emplace(Event);
+			DestinationContainers.Emplace(InResult.Self->GetClassValue());
+			DestinationContainerName = InResult.Self->GetClassValue();
+		}
+		
+		// Add current pose for desti container to the list of tuples
+		PouringPoseForDestinationContainer.Add({ DestinationContainerName, InResult.Self->GetCachedPose() });
 
 	}
 
+}
+
+/*
+*  Check if for the given list of Pouring events the container name is the same, if yes then the event has started
+*/
+
+bool FSLContactEventHandler::HasPouringEventHappened(TArray <FString> Containers, const FSLContactResult& InResult) {
+	for (FString Container : Containers) {
+		if (Container == InResult.Self->GetClassValue()) {
+			return true;
+		}
+
+	}
+	return false;
 }
 
 // Publish finished event

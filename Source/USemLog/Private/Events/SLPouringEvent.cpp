@@ -4,17 +4,21 @@
 #include "Events/SLPouringEvent.h"
 #include "Individuals/Type/SLBaseIndividual.h"
 #include "Owl/SLOwlExperimentStatics.h"
+#include <iostream>
+#include <string> 
 
 // Constructor with initialization
 FSLPouringEvent::FSLPouringEvent(const FString& InId, float InStart, float InEnd, uint64 InPairId,
 	USLBaseIndividual* InIndividual1,
 	USLBaseIndividual* InIndividual2,
-	USLPouringEventTypes PouringEventTypes) :
+	USLPouringEventTypes PouringEventTypes,
+	FString ContainerName):
 	ISLEvent(InId, InStart, InEnd),
 	PairId(InPairId),
 	Individual1(InIndividual1), 
 	Individual2(InIndividual2),
-	PouringEventTypes(PouringEventTypes)
+	PouringEventTypes(PouringEventTypes),
+	ContainerName(ContainerName)
 {
 }
 
@@ -22,12 +26,14 @@ FSLPouringEvent::FSLPouringEvent(const FString& InId, float InStart, float InEnd
 FSLPouringEvent::FSLPouringEvent(const FString& InId, float InStart, uint64 InPairId,
 	USLBaseIndividual* InIndividual1,
 	USLBaseIndividual* InIndividual2,
-	USLPouringEventTypes PouringEventTypes) :
+	USLPouringEventTypes PouringEventTypes,
+	FString ContainerName):
 	ISLEvent(InId, InStart),
 	PairId(InPairId),
 	Individual1(InIndividual1),
 	Individual2(InIndividual2),
-	PouringEventTypes(PouringEventTypes)
+	PouringEventTypes(PouringEventTypes),
+	ContainerName(ContainerName)
 {
 }
 
@@ -98,8 +104,81 @@ FString FSLPouringEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClient) c
 		+ TEXT("'");
 	FString TaskType = TEXT("soma:'Pouring'");
 
+	float MaxPouringAngleX = -180, MaxPouringAngleY, MaxPouringAngleZ;
+	float MinPouringAngleX = 180, MinPouringAngleY, MinPouringAngleZ;
+	TArray<FVector> SourceContainerPoses;
+	TArray<FVector> DestinationContainerPoses;
+	// logic for selection of Source or Destination Container poses Array object..
+	if (PouringEventTypes == USLPouringEventTypes::PouredOut) {
+		// pouring out event shows that the source container locations are stores in PouringPoseForSourceContainer
+		
+		for (std::tuple<FString, FTransform> PP : PouringPoseForSourceContainer) {
+			// if given container name is same as the one stored in tuple
+			if (ContainerName == std::get<0>(PP)) {
+				// find min and max pouring angles
+				if (MaxPouringAngleX < std::get<1>(PP).GetRotation().Euler().X) {
+					MaxPouringAngleX = std::get<1>(PP).GetRotation().Euler().X;
+					MaxPouringAngleY = std::get<1>(PP).GetRotation().Euler().Y;
+					MaxPouringAngleZ = std::get<1>(PP).GetRotation().Euler().Z;
+
+				}
+				if (MinPouringAngleX > std::get<1>(PP).GetRotation().Euler().X) {
+					MinPouringAngleX = std::get<1>(PP).GetRotation().Euler().X;
+					MinPouringAngleY = std::get<1>(PP).GetRotation().Euler().Y;
+					MinPouringAngleZ = std::get<1>(PP).GetRotation().Euler().Z;
+				}
+
+				// get all poses for source container
+				SourceContainerPoses.Add(std::get<1>(PP).GetTranslation());
+
+			}
+		}
+		
+	}
+	else {
+		// pouring out event will have destination locations stored in PouringPoseForSourceContainer
+		for (std::tuple<FString, FTransform> PP : PouringPoseForDestinationContainer) {
+			DestinationContainerPoses.Add(std::get<1>(PP).GetTranslation());
+		}
+	}
+	
+
+
+
+
+	/*UE_LOG(LogTemp, Warning, TEXT("%lf is the angle of source container: "), PouringAnglesForSourceContainer[0][0]);
+	UE_LOG(LogTemp, Warning, TEXT("%lf is the pose of source container: "), PouringPoseForSourceContainer[0][0]);
+	UE_LOG(LogTemp, Warning, TEXT("%lf is the pose of desti container: "), PouringPoseForDestinationContainer[0][0]);*/
+
 	InFSLKRRestClient->SendCreateSubActionRequest(SubActionType, TaskType,
 		ObjectsPartcipated, double(StartTime), double(EndTime));
+
+	FString MaxAngleStr = TEXT("") + FString::SanitizeFloat(MaxPouringAngleX) + TEXT(",") + FString::SanitizeFloat(MaxPouringAngleY) + TEXT(",") + FString::SanitizeFloat(MaxPouringAngleZ);
+	FString MinAngleStr = TEXT("") + FString::SanitizeFloat(MinPouringAngleX) + TEXT(",") + FString::SanitizeFloat(MinPouringAngleY) + TEXT(",") + FString::SanitizeFloat(MinPouringAngleZ);
+	FString SourceContainerPosesStr = TEXT("[");
+	for (FVector pose : SourceContainerPoses) {
+		SourceContainerPosesStr += TEXT("(") + FString::SanitizeFloat(pose.X) + TEXT(",") + FString::SanitizeFloat(pose.Y) + TEXT(",") 
+			+ FString::SanitizeFloat(pose.Z) + TEXT(")");
+	}
+	SourceContainerPosesStr += TEXT("]");
+
+	FString DestContainerPosesStr = TEXT("[");
+	for (FVector pose : DestinationContainerPoses) {
+		DestContainerPosesStr += TEXT("(") + FString::SanitizeFloat(pose.X) + TEXT(",") + FString::SanitizeFloat(pose.Y) + TEXT(",")
+			+ FString::SanitizeFloat(pose.Z) + TEXT(")");
+	}
+	DestContainerPosesStr += TEXT("]");
+
+	if (PouringEventTypes == USLPouringEventTypes::PouredOut) {
+		InFSLKRRestClient->SendPouringAdditionalRequest(SubActionType, MaxAngleStr, MinAngleStr,
+			ContainerName, TEXT(""), SourceContainerPosesStr);
+	}
+	else {
+		InFSLKRRestClient->SendPouringAdditionalRequest(SubActionType, TEXT(""), TEXT(""),
+			TEXT(""), ContainerName, DestContainerPosesStr);
+	}
+
+	
 
 	return TEXT("Succeed!");
 }

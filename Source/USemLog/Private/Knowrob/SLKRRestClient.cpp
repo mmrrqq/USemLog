@@ -170,6 +170,25 @@ void FSLKRRestClient::SendCreateSubActionRequest(FString SubActionType, FString 
     UE_LOG(LogTemp, Warning, TEXT("response type: %s"), Status);
 }
 
+void FSLKRRestClient::SendPouringAdditionalRequest(FString SubActionType, FString MaxPouringAngle, FString MinPouringAngle, 
+    FString SourceContainer, FString DestinationContainer, FString PouringPose) {
+    // create a GET request
+    FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
+    // final URL
+    FString FINAL_URL = URL + TEXT("add_additional_pouring_information");
+    Request->SetURL(FINAL_URL);
+    Request->SetVerb((TEXT("POST")));
+    Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+
+
+    FString Query = FString::Printf(TEXT("{ \"parent_action_iri\": \"%s\", \"sub_action_type\": \"%s\", \"MaxPouringAngle\": \"%s\", \"MinPouringAngle\": \"%s\", \"SourceContainer\": \"%s\", \"DestinationContainer\": \"%s\", \"PouringPose\": \"%s\"}"),
+        *ActionIri, *SubActionType, *MaxPouringAngle, *MinPouringAngle, *SourceContainer, *DestinationContainer, *PouringPose);
+    Request->SetContentAsString(*Query);
+    Request->ProcessRequest();
+    const TCHAR* Status = EHttpRequestStatus::ToString(Request->GetStatus());
+    UE_LOG(LogTemp, Warning, TEXT("response type: %s"), Status);
+}
+
 void FSLKRRestClient::SendRequest(FString RequestContent) {
    
     FHttpModule& httpModule = FHttpModule::Get();

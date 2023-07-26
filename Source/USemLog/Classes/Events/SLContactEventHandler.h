@@ -2,7 +2,8 @@
 // Author: Andrei Haidu (http://haidu.eu)
 
 #pragma once
-
+#include <tuple> // for tuple
+#include <string>
 #include "Events/ISLEventHandler.h"
 
 
@@ -80,6 +81,8 @@ private:
 
 	// Array of started Pouring events
 	TArray<TSharedPtr<FSLPouringEvent>> StartedPouringEvents;
+
+	bool HasPouringEventHappened(TArray <FString> Containers, const FSLContactResult& InResult);
 	
 	/* Constant values */
 	constexpr static float ContactEventMin = 0.01f;
@@ -87,5 +90,13 @@ private:
 	constexpr static float PouringEventMin = 0.03f;
 	float PouringEndTime = 0.0;
 	int particlesOverlapEnded = 0;
+	TArray<std::tuple <FString, FTransform>> PouringPoseForSourceContainer;
+	TArray<std::tuple <FString, FTransform>> PouringPoseForDestinationContainer;
+	TArray <FString> SourceContainers;
+	TArray <FString> DestinationContainers;
+	FString SourceContainerName;
+	FString DestinationContainerName;
+
+
 
 };
