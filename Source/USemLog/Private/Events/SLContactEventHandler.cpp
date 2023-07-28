@@ -12,6 +12,9 @@
 #include "Engine/Classes/Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Classes/Engine/World.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
+#include "Engine/Engine.h"
+
 
 // Set parent
 void FSLContactEventHandler::Init(UObject* InParent)
@@ -117,25 +120,10 @@ bool FSLContactEventHandler::FinishContactEvent(USLBaseIndividual* InOther, floa
 			}
 			
 			
-			if ((*EventItr)->Individual2->GetClass() == USLParticleIndividual::StaticClass()) {
-				// find out how many particles are ending overlap with source container
-				particlesOverlapEnded = particlesOverlapEnded + 1;
-
-				// find out if the last particle that is dropped from the source container is it 5 seconds ago?
-				// Then remove current pouring event from the List of events and create new Pouring event
-				
-
-				//UE_LOG(LogTemp, Warning, TEXT("%d total particles overlapped.."),
-				//	particlesOverlapEnded);
-			}
-
 			// Remove event from the pending list
 			EventItr.RemoveCurrent();
 
-			// if for the last contact event, the end time is the pouring endtime
-			if (PouringEndTime < EndTime) {
-				PouringEndTime = EndTime;
-			}
+			
 
 			return true;
 		}
@@ -214,7 +202,6 @@ void FSLContactEventHandler::FinishAllEvents(float EndTime)
 		if (PouringEndTime - Ev->StartTime > PouringEventMin)
 		{
 			// Set end time and publish event
-			Ev->EndTime = PouringEndTime;
 			Ev->NumberOfParticles = particlesOverlapEnded;
 			Ev->PouringPoseForSourceContainer = PouringPoseForSourceContainer;
 			Ev->PouringPoseForDestinationContainer = PouringPoseForDestinationContainer;
@@ -231,54 +218,68 @@ void FSLContactEventHandler::AddNewPouringEvent(const FSLContactResult& InResult
 	float ContainerEulerXAngle = InResult.Self->GetCachedPose().GetRotation().Euler().X;
 	float ContainerEulerYAngle = InResult.Self->GetCachedPose().GetRotation().Euler().Y;
 
-	FVector rot = InResult.Self->GetCachedPose().GetRotation().Euler();
+	// TODO1: Start logging current Source container and time as tuple in an array
+	// TODO2: For each contact event check if the same source container if the time is less than few seconds, then it is same pouring out event
+	// TODO3: For same source container, if the last recorded time is greater than few seconds limit then start new pouring out event
 
-	FVector pose = InResult.Self->GetCachedPose().GetTranslation();
 	//std::tuple<float, float> PouringAngleForSourceContainer{ sourceContainerEulerXAngle, sourceContainerEulerYAngle};
 	// Start a semantic Pouring event, check if the source container has required angles around X and Y axis in oder to consider it as source container
-	if (InResult.Other->GetClass() == USLParticleIndividual::StaticClass() &&
+	
+if (InResult.Other->GetClass() == USLParticleIndividual::StaticClass() &&
 		(ContainerEulerXAngle > 45.00 || ContainerEulerXAngle < -45.00 
 			|| ContainerEulerYAngle > 45.00 || ContainerEulerYAngle < -45.00)) {
 		// TODO: find out logic other than this to include multiple pouring events
 		// TODO: Perform logic based upon time, ie how many particles are poured in a given second? And how long pouring event should be?
 		// Is there a way for combining contineous pouring events? 
-		if (StartedPouringEvents.Num() == 0 || SourceContainerName != InResult.Self->GetClassValue()) {
-		//if (StartedPouringEvents.Num() == 0 || !HasPouringEventHappened(SourceContainers, InResult)) {
-			TSharedPtr<FSLPouringEvent> Event = MakeShareable(new FSLPouringEvent(
+		if (!IsPouringEventCurrentlyRunning(SourceContainersList, InResult)) {
+			//if (StartedPouringEvents.Num() == 0 || !HasPouringEventHappened(SourceContainers, InResult)) {
+			CurrentPouringEvent = MakeShareable(new FSLPouringEvent(
 				FSLUuid::NewGuidInBase64Url(), InResult.Time,
 				FSLUuid::PairEncodeCantor(InResult.Self->GetUniqueID(), InResult.Other->GetUniqueID()),
-				InResult.Self, InResult.Other, USLPouringEventTypes::PouredOut, InResult.Self->GetClassValue()));
-			Event->EpisodeId = EpisodeId;
+				InResult.Self, InResult.Other, USLPouringEventTypes::PouredOut));
+			CurrentPouringEvent->EpisodeId = EpisodeId;
+			CurrentPouringEvent->SourceContainerName = InResult.Other->GetClassValue();
 			// Add event to the pending Pourings array
-			StartedPouringEvents.Emplace(Event);
-			SourceContainers.Emplace(InResult.Self->GetClassValue());
-			SourceContainerName = InResult.Self->GetClassValue();
+			StartedPouringEvents.Emplace(CurrentPouringEvent);
+
 		}
+
+		SourceContainersList.Add({ InResult.Self->GetClassValue(), InResult.Time });
+		//else {
+		//	//FinishPouringEvent(InResult.Self, InResult.Time);
+		//}
 		// Add current pose for source container to the list of tuples
-		PouringPoseForSourceContainer.Add({SourceContainerName, InResult.Self->GetCachedPose() });
+		PouringPoseForSourceContainer.Add(InResult.Self->GetCachedPose());
+		SourceContainersList.AddUnique({ InResult.Self->GetClassValue(), InResult.Time });
 		
 		
 	}
 	else if (InResult.Other->GetClass() == USLParticleIndividual::StaticClass() &&
 		(ContainerEulerXAngle < 45.00 || ContainerEulerXAngle > -45.00
 			|| ContainerEulerYAngle < 45.00 || ContainerEulerYAngle > -45.00)) {
+		
+		//StartedPouringEvents.Last()->DestinationContainerName = InResult.Other->GetClassValue();
+		
 		// Start a semantic Pouring event, for destination container
 		
 		// TODO: find out logic other than this to include multiple pouring events
-		if (StartedPouringEvents.Num() == 0 || DestinationContainerName != InResult.Self->GetClassValue()) {
-			TSharedPtr<FSLPouringEvent> Event = MakeShareable(new FSLPouringEvent(
+		if (!IsPouringEventCurrentlyRunning(DestinationContainersList, InResult)) {
+			CurrentPouringEvent = MakeShareable(new FSLPouringEvent(
 				FSLUuid::NewGuidInBase64Url(), InResult.Time,
 				FSLUuid::PairEncodeCantor(InResult.Self->GetUniqueID(), InResult.Other->GetUniqueID()),
-				InResult.Self, InResult.Other, USLPouringEventTypes::PouredInto, InResult.Self->GetClassValue()));
-			Event->EpisodeId = EpisodeId;
+				InResult.Self, InResult.Other, USLPouringEventTypes::PouredInto));
+			CurrentPouringEvent->EpisodeId = EpisodeId;
+			CurrentPouringEvent->DestinationContainerName = InResult.Self->GetClassValue();
 			// Add event to the pending Pourings array
-			StartedPouringEvents.Emplace(Event);
-			DestinationContainers.Emplace(InResult.Self->GetClassValue());
-			DestinationContainerName = InResult.Self->GetClassValue();
+			StartedPouringEvents.Emplace(CurrentPouringEvent);
 		}
-		
-		// Add current pose for desti container to the list of tuples
-		PouringPoseForDestinationContainer.Add({ DestinationContainerName, InResult.Self->GetCachedPose() });
+		else {
+			//FinishPouringEvent(InResult.Self, InResult.Time);
+		}
+		//
+		//// Add current pose for desti container to the list of tuples
+		PouringPoseForDestinationContainer.Add(InResult.Self->GetCachedPose());
+		DestinationContainersList.Add({ InResult.Self->GetClassValue(), InResult.Time });
 
 	}
 
@@ -288,10 +289,28 @@ void FSLContactEventHandler::AddNewPouringEvent(const FSLContactResult& InResult
 *  Check if for the given list of Pouring events the container name is the same, if yes then the event has started
 */
 
-bool FSLContactEventHandler::HasPouringEventHappened(TArray <FString> Containers, const FSLContactResult& InResult) {
-	for (FString Container : Containers) {
-		if (Container == InResult.Self->GetClassValue()) {
-			return true;
+bool FSLContactEventHandler::IsPouringEventCurrentlyRunning(TArray<std::tuple<FString, float>> Containers, const FSLContactResult& InResult) {
+	for (std::tuple<FString, float> Container : Containers) {
+		// check for the same container if the time is below limit or above?
+		if (std::get<0>(Container) == InResult.Self->GetClassValue()) {
+			if((InResult.Time - std::get<1>(Container)) < MaxPouringEventTime)
+				return true;
+		}
+
+	}
+	return false;
+}
+
+/*
+*  Check if for the given list of Pouring events the container name is the same, if yes then the event has started
+*/
+
+bool FSLContactEventHandler::IsPouringEventCurrentlyRunning(TArray<std::tuple<FString, float>> Containers, USLBaseIndividual* InResultSelf, float Time) {
+	for (std::tuple<FString, float> Container : Containers) {
+		// check for the same container if the time is below limit or above?
+		if (std::get<0>(Container) == InResultSelf->GetClassValue()) {
+			if ((Time - std::get<1>(Container)) < MaxPouringEventTime)
+				return true;
 		}
 
 	}
@@ -299,13 +318,13 @@ bool FSLContactEventHandler::HasPouringEventHappened(TArray <FString> Containers
 }
 
 // Publish finished event
-bool FSLContactEventHandler::FinishPouringEvent(USLBaseIndividual* InOther, float EndTime)
+bool FSLContactEventHandler::FinishPouringEvent(USLBaseIndividual* InSelf, float EndTime)
 {
 	// Use iterator to be able to remove the entry from the array
 	for (auto EventItr(StartedPouringEvents.CreateIterator()); EventItr; ++EventItr)
 	{
 		// It is enough to compare against the other id when searching
-		if ((*EventItr)->Individual2 == InOther)
+		if ((*EventItr)->Individual1 == InSelf)
 		{
 			// Set the event end time
 			(*EventItr)->EndTime = EndTime;
@@ -335,6 +354,19 @@ void FSLContactEventHandler::OnSLOverlapBegin(const FSLContactResult& InResult)
 void FSLContactEventHandler::OnSLOverlapEnd(USLBaseIndividual* Self, USLBaseIndividual* Other, float Time)
 {
 	FinishContactEvent(Other, Time);
+
+	// for pouring contacts do some more calculation about what time it should end
+	if (Other->GetClass() == USLParticleIndividual::StaticClass()) {
+		// find out how many particles are ending overlap with source container
+		particlesOverlapEnded = particlesOverlapEnded + 1;
+		
+		// if for the last contact event, the end time is the pouring endtime
+		CurrentPouringEvent->EndTime = Time;
+
+		
+
+		
+	}
 }
 
 // Event called when a supported by event begins

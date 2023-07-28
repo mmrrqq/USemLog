@@ -74,7 +74,7 @@ void FSLPouringEventHandler::AddNewPouringEvent(const FSLContactResult& InResult
 			TSharedPtr<FSLPouringEvent> Event = MakeShareable(new FSLPouringEvent(
 				FSLUuid::NewGuidInBase64Url(), InResult.Time,
 				FSLUuid::PairEncodeCantor(InResult.Self->GetUniqueID(), InResult.Other->GetUniqueID()),
-				InResult.Self, InResult.Other, USLPouringEventTypes::PouredOut, InResult.Self->GetClassValue()));
+				InResult.Self, InResult.Other, USLPouringEventTypes::PouredOut));
 			Event->EpisodeId = EpisodeId;
 			// Add event to the pending Pourings array
 			StartedPouringEvents.Emplace(Event);

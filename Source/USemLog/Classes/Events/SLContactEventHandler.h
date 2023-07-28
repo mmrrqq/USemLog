@@ -82,7 +82,8 @@ private:
 	// Array of started Pouring events
 	TArray<TSharedPtr<FSLPouringEvent>> StartedPouringEvents;
 
-	bool HasPouringEventHappened(TArray <FString> Containers, const FSLContactResult& InResult);
+	bool IsPouringEventCurrentlyRunning(TArray<std::tuple<FString, float>> Containers, const FSLContactResult& InResult);
+	bool IsPouringEventCurrentlyRunning(TArray<std::tuple<FString, float>> Containers, USLBaseIndividual* InResultSelf, float Time);
 	
 	/* Constant values */
 	constexpr static float ContactEventMin = 0.01f;
@@ -90,12 +91,20 @@ private:
 	constexpr static float PouringEventMin = 0.03f;
 	float PouringEndTime = 0.0;
 	int particlesOverlapEnded = 0;
-	TArray<std::tuple <FString, FTransform>> PouringPoseForSourceContainer;
-	TArray<std::tuple <FString, FTransform>> PouringPoseForDestinationContainer;
+	TArray<FTransform> PouringPoseForSourceContainer;
+	TArray<FTransform> PouringPoseForDestinationContainer;
 	TArray <FString> SourceContainers;
 	TArray <FString> DestinationContainers;
 	FString SourceContainerName;
 	FString DestinationContainerName;
+	
+	TArray<std::tuple<FString, float>> SourceContainersList;
+	
+	TArray<std::tuple<FSLContactResult, FSLContactResult>> ListOfContainersCombinations;
+
+	TArray<std::tuple<FString, float>> DestinationContainersList;
+	float MaxPouringEventTime = 5;
+	TSharedPtr<FSLPouringEvent> CurrentPouringEvent;
 
 
 
