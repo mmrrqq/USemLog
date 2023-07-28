@@ -43,8 +43,6 @@ public:
 
 	int NumberOfParticles = 0;
 
-	FString ContainerName;
-
 	FString SourceContainerName;
 	FString DestinationContainerName;
 	

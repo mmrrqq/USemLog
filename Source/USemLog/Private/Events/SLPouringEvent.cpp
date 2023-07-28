@@ -76,8 +76,8 @@ FString FSLPouringEvent::Context() const
 // Get the tooltip data
 FString FSLPouringEvent::Tooltip() const
 {
-	return FString::Printf(TEXT("\'O1\',\'%s\',\'Id\',\'%s\',\'O2\',\'%s\',\'Id\',\'%s\',\'O3\',\'%s\',\'Id\',\'%s\', \'Id\',\'%s\'"),
-		*Individual1->GetClassValue(), *Individual1->GetIdValue(), *Individual2->GetClassValue(), *Individual2->GetIdValue(), *DestinationContainerName, *Individual2->GetIdValue(), *Id);
+	return FString::Printf(TEXT("\'O1\',\'%s\',\'Id\',\'%s\',\'O2\',\'%s\',\'Id\',\'%s\', \'Id\',\'%s\'"),
+		*Individual1->GetClassValue(), *Individual1->GetIdValue(), *Individual2->GetClassValue(), *Individual2->GetIdValue(), *Id);
 }
 
 // Get the data as string
@@ -100,63 +100,59 @@ FString FSLPouringEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClient) c
 	FString SubActionType = TEXT("soma:'") + FString(PouringEventTypes == USLPouringEventTypes::PouredInto ? "PouredInTo" : "PouredOut") 
 		+ TEXT("'");
 	FString TaskType = TEXT("soma:'Pouring'");
-
-	/*float MaxPouringAngleX = -180, MaxPouringAngleY, MaxPouringAngleZ;
-	float MinPouringAngleX = 180, MinPouringAngleY, MinPouringAngleZ;
-	TArray<FVector> SourceContainerPoses;
-	TArray<FVector> DestinationContainerPoses;*/
-
-
-	// logic for selection of Source or Destination Container poses Array object..
-	//if (PouringEventTypes == USLPouringEventTypes::PouredOut) {
-	//	// pouring out event shows that the source container locations are stores in PouringPoseForSourceContainer
-	//	
-	//	for (std::tuple<FString, FTransform> PP : PouringPoseForSourceContainer) {
-	//		// if given container name is same as the one stored in tuple
-	//		if (ContainerName == std::get<0>(PP)) {
-	//			// find min and max pouring angles
-	//			if (MaxPouringAngleX < std::get<1>(PP).GetRotation().Euler().X) {
-	//				MaxPouringAngleX = std::get<1>(PP).GetRotation().Euler().X;
-	//				MaxPouringAngleY = std::get<1>(PP).GetRotation().Euler().Y;
-	//				MaxPouringAngleZ = std::get<1>(PP).GetRotation().Euler().Z;
-
-	//			}
-	//			if (MinPouringAngleX > std::get<1>(PP).GetRotation().Euler().X) {
-	//				MinPouringAngleX = std::get<1>(PP).GetRotation().Euler().X;
-	//				MinPouringAngleY = std::get<1>(PP).GetRotation().Euler().Y;
-	//				MinPouringAngleZ = std::get<1>(PP).GetRotation().Euler().Z;
-	//			}
-
-	//			// get all poses for source container
-	//			SourceContainerPoses.Add(std::get<1>(PP).GetTranslation());
-
-	//		}
-	//	}
-	//	
-	//}
-	//else {
-	//	// pouring out event will have destination locations stored in PouringPoseForSourceContainer
-	//	for (std::tuple<FString, FTransform> PP : PouringPoseForDestinationContainer) {
-	//		DestinationContainerPoses.Add(std::get<1>(PP).GetTranslation());
-	//	}
-	//}
 	
-
-
-
-
-	/*UE_LOG(LogTemp, Warning, TEXT("%lf is the angle of source container: "), PouringAnglesForSourceContainer[0][0]);
-	UE_LOG(LogTemp, Warning, TEXT("%lf is the pose of source container: "), PouringPoseForSourceContainer[0][0]);
-	UE_LOG(LogTemp, Warning, TEXT("%lf is the pose of desti container: "), PouringPoseForDestinationContainer[0][0]);*/
-
+	// create a pouring event
 	InFSLKRRestClient->SendCreateSubActionRequest(SubActionType, TaskType,
 		ObjectsPartcipated, double(StartTime), double(EndTime));
 
-	/*FString MaxAngleStr = TEXT("") + FString::SanitizeFloat(MaxPouringAngleX) + TEXT(",") + FString::SanitizeFloat(MaxPouringAngleY) + TEXT(",") + FString::SanitizeFloat(MaxPouringAngleZ);
-	FString MinAngleStr = TEXT("") + FString::SanitizeFloat(MinPouringAngleX) + TEXT(",") + FString::SanitizeFloat(MinPouringAngleY) + TEXT(",") + FString::SanitizeFloat(MinPouringAngleZ);
+	// Do additional calculation for poses and angles
+	float MaxPouringAngleX = -180, MaxPouringAngleY, MaxPouringAngleZ;
+	float MinPouringAngleX = 180, MinPouringAngleY, MinPouringAngleZ;
+	TArray<FVector> SourceContainerPoses;
+	TArray<FVector> DestinationContainerPoses;
+
+
+	// logic for selection of Source or Destination Container poses Array object..
+	if (PouringEventTypes == USLPouringEventTypes::PouredOut) {
+		// pouring out event shows that the source container locations are stores in PouringPoseForSourceContainer
+		
+		for (FTransform PP : PouringPoseForSourceContainer) {
+			// if given container name is same as the one stored in tuple
+			float PPX = PP.GetRotation().Euler().X;
+			float PPY = PP.GetRotation().Euler().Y;
+			float PPZ = PP.GetRotation().Euler().Z;
+
+			// find min and max pouring angles
+			if (MaxPouringAngleX < PPX) {
+				MaxPouringAngleX = PPX;
+				MaxPouringAngleY = PPY;
+				MaxPouringAngleZ = PPZ;
+
+			}
+			if (MinPouringAngleX > PPX) {
+				MinPouringAngleX = PPX;
+				MinPouringAngleY = PPY;
+				MinPouringAngleZ = PPZ;
+			}
+
+			// get all poses for source container
+			SourceContainerPoses.Add(PP.GetTranslation());
+		}
+		
+	}
+	else {
+		// pouring out event will have destination locations stored in PouringPoseForSourceContainer
+		for (FTransform PP : PouringPoseForDestinationContainer) {
+			DestinationContainerPoses.Add(PP.GetTranslation());
+		}
+	}
+	
+
+	FString MaxAngleStr = TEXT("X=") + FString::SanitizeFloat(MaxPouringAngleX) + TEXT(",Y=") + FString::SanitizeFloat(MaxPouringAngleY) + TEXT(",Z=") + FString::SanitizeFloat(MaxPouringAngleZ);
+	FString MinAngleStr = TEXT("X=") + FString::SanitizeFloat(MinPouringAngleX) + TEXT(",Y=") + FString::SanitizeFloat(MinPouringAngleY) + TEXT(",Z=") + FString::SanitizeFloat(MinPouringAngleZ);
 	FString SourceContainerPosesStr = TEXT("[");
 	for (FVector pose : SourceContainerPoses) {
-		SourceContainerPosesStr += TEXT("(") + FString::SanitizeFloat(pose.X) + TEXT(",") + FString::SanitizeFloat(pose.Y) + TEXT(",") 
+		SourceContainerPosesStr += TEXT("(X=") + FString::SanitizeFloat(pose.X) + TEXT(",Y=") + FString::SanitizeFloat(pose.Y) + TEXT(",Z=") 
 			+ FString::SanitizeFloat(pose.Z) + TEXT(")");
 	}
 	SourceContainerPosesStr += TEXT("]");
@@ -166,16 +162,16 @@ FString FSLPouringEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClient) c
 		DestContainerPosesStr += TEXT("(") + FString::SanitizeFloat(pose.X) + TEXT(",") + FString::SanitizeFloat(pose.Y) + TEXT(",")
 			+ FString::SanitizeFloat(pose.Z) + TEXT(")");
 	}
-	DestContainerPosesStr += TEXT("]");*/
+	DestContainerPosesStr += TEXT("]");
 
-	/*if (PouringEventTypes == USLPouringEventTypes::PouredOut) {
+	if (PouringEventTypes == USLPouringEventTypes::PouredOut) {
 		InFSLKRRestClient->SendPouringAdditionalRequest(SubActionType, MaxAngleStr, MinAngleStr,
-			ContainerName, TEXT(""), SourceContainerPosesStr);
+			SourceContainerName, TEXT(""), SourceContainerPosesStr);
 	}
 	else {
 		InFSLKRRestClient->SendPouringAdditionalRequest(SubActionType, TEXT(""), TEXT(""),
-			TEXT(""), ContainerName, DestContainerPosesStr);
-	}*/
+			TEXT(""), DestinationContainerName, DestContainerPosesStr);
+	}
 
 	
 

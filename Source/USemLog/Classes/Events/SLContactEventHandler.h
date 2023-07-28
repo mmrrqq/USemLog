@@ -83,13 +83,11 @@ private:
 	TArray<TSharedPtr<FSLPouringEvent>> StartedPouringEvents;
 
 	bool IsPouringEventCurrentlyRunning(TArray<std::tuple<FString, float>> Containers, const FSLContactResult& InResult);
-	bool IsPouringEventCurrentlyRunning(TArray<std::tuple<FString, float>> Containers, USLBaseIndividual* InResultSelf, float Time);
 	
 	/* Constant values */
 	constexpr static float ContactEventMin = 0.01f;
 	constexpr static float SupportedByEventMin = 0.4f;
 	constexpr static float PouringEventMin = 0.03f;
-	float PouringEndTime = 0.0;
 	int particlesOverlapEnded = 0;
 	TArray<FTransform> PouringPoseForSourceContainer;
 	TArray<FTransform> PouringPoseForDestinationContainer;
