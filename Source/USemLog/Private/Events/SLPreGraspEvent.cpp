@@ -82,8 +82,9 @@ FString FSLPreGraspEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClient) 
 	FString SubActionType = TEXT("soma:'PreGrasp'");
 	FString TaskType = TEXT("soma:'PreGrasping'");
 
+	FString AdditionalEventInfo = TEXT("");
 	InFSLKRRestClient->SendCreateSubActionRequest(SubActionType, TaskType,
-		ObjectsPartcipated, double(StartTime), double(EndTime));
+		ObjectsPartcipated, AdditionalEventInfo, double(StartTime), double(EndTime));
 
 	return TEXT("Succeed!");
 }

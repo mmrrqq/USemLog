@@ -147,7 +147,7 @@ EHttpRequestStatus::Type FSLKRRestClient::SendFinishEpisodeRequest() {
 }
 
 void FSLKRRestClient::SendCreateSubActionRequest(FString SubActionType, FString TaskType, 
-    FString ObjectsPartcipated, double StartTime, double EndTime) {
+    FString ObjectsPartcipated, FString AdditionalEventInfo, double StartTime, double EndTime) {
     // create a GET request
     FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
     // final URL
@@ -162,8 +162,8 @@ void FSLKRRestClient::SendCreateSubActionRequest(FString SubActionType, FString 
     double  EventStartTime = GetGameStartUnixTime() + StartTime;
     double  EventEndTime = GetGameStartUnixTime() + EndTime;
 
-    FString Query = FString::Printf(TEXT("{ \"parent_action_iri\": \"%s\", \"sub_action_type\": \"%s\", \"task_type\": \"%s\", \"start_time\": \"%lf\", \"end_time\": \"%lf\", \"objects_participated\": \"%s\", \"game_participant\": \"%s\"}"),
-        *ActionIri, *SubActionType, *TaskType, EventStartTime, EventEndTime, *ObjectsPartcipated, *GameParticipant);
+    FString Query = FString::Printf(TEXT("{ \"parent_action_iri\": \"%s\", \"sub_action_type\": \"%s\", \"task_type\": \"%s\", \"start_time\": \"%lf\", \"end_time\": \"%lf\", \"objects_participated\": \"%s\", \"additional_event_info\": \"%s\", \"game_participant\": \"%s\"}"),
+        *ActionIri, *SubActionType, *TaskType, EventStartTime, EventEndTime, *ObjectsPartcipated, *AdditionalEventInfo, *GameParticipant);
     Request->SetContentAsString(*Query);
     Request->ProcessRequest();
     const TCHAR* Status = EHttpRequestStatus::ToString(Request->GetStatus());
@@ -181,7 +181,7 @@ void FSLKRRestClient::SendPouringAdditionalRequest(FString SubActionType, FStrin
     Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
 
 
-    FString Query = FString::Printf(TEXT("{ \"parent_action_iri\": \"%s\", \"sub_action_type\": \"%s\", \"MaxPouringAngle\": \"%s\", \"MinPouringAngle\": \"%s\", \"SourceContainer\": \"%s\", \"DestinationContainer\": \"%s\", \"PouringPose\": \"%s\"}"),
+    FString Query = FString::Printf(TEXT("{ \"parent_action_iri\": \"%s\", \"sub_action_type\": \"%s\", \"max_pouring_angle\": \"%s\", \"min_pouring_angle\": \"%s\", \"source_container\": \"%s\", \"destination_container\": \"%s\", \"pouring_pose\": \"%s\"}"),
         *ActionIri, *SubActionType, *MaxPouringAngle, *MinPouringAngle, *SourceContainer, *DestinationContainer, *PouringPose);
     Request->SetContentAsString(*Query);
     Request->ProcessRequest();

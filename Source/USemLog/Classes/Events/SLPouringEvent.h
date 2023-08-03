@@ -30,6 +30,8 @@ public:
 	FSLPouringEvent(const FString& InId, const float InStart, const uint64 InPairId,
 		USLBaseIndividual* InIndividual1, USLBaseIndividual* InIndividual2, USLPouringEventTypes PouringEventType);
 	
+	FString CreateAdditionalInfoForPouringEvent() const;
+
 	// Pair id of the event (combination of two unique runtime ids)
 	uint64 PairId;
 

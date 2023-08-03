@@ -83,8 +83,9 @@ FString FSLPutDownEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClient) c
 	FString SubActionType = TEXT("soma:'PutDown'");
 	FString TaskType = TEXT("soma:'PuttingDown'");
 
+	FString AdditionalEventInfo = TEXT("");
 	InFSLKRRestClient->SendCreateSubActionRequest(SubActionType, TaskType,
-		ObjectsPartcipated, double(StartTime), double(EndTime));
+		ObjectsPartcipated, AdditionalEventInfo, double(StartTime), double(EndTime));
 
 	return TEXT("Succeed!");
 }

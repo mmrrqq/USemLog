@@ -86,8 +86,9 @@ FString FSLGraspEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClient) con
 	FString SubActionType = TEXT("soma:'Grasp'");
 	FString TaskType = TEXT("soma:'Grasping'");
 
+	FString AdditionalEventInfo = TEXT("");
 	InFSLKRRestClient->SendCreateSubActionRequest(SubActionType, TaskType,
-		ObjectsPartcipated, double(StartTime), double(EndTime));
+		ObjectsPartcipated, AdditionalEventInfo, double(StartTime), double(EndTime));
 
 	return TEXT("Succeed!");
 }

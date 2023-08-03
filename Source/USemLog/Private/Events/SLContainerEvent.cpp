@@ -87,8 +87,9 @@ FString FSLContainerEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClient)
 	// TODO: create new concept called Containing in SOMA task branch
 	FString TaskType = TEXT("soma:'Containing'");
 
+	FString AdditionalEventInfo = TEXT("");
 	InFSLKRRestClient->SendCreateSubActionRequest(SubActionType, TaskType,
-		ObjectsPartcipated, double(StartTime), double(EndTime));
+		ObjectsPartcipated, AdditionalEventInfo, double(StartTime), double(EndTime));
 
 	return TEXT("Succeed!");
 }

@@ -83,8 +83,9 @@ FString FSLPickUpEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClient) co
 	FString SubActionType = TEXT("soma:'PickUp'");
 	FString TaskType = TEXT("soma:'PickingUp'");
 
+	FString AdditionalEventInfo = TEXT("");
 	InFSLKRRestClient->SendCreateSubActionRequest(SubActionType, TaskType,
-		ObjectsPartcipated, double(StartTime), double(EndTime));
+		ObjectsPartcipated, AdditionalEventInfo, double(StartTime), double(EndTime));
 
 	return TEXT("Succeed!");
 }

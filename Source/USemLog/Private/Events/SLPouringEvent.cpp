@@ -5,7 +5,7 @@
 #include "Individuals/Type/SLBaseIndividual.h"
 #include "Owl/SLOwlExperimentStatics.h"
 #include <iostream>
-#include <string> 
+#include <string>  
 
 // Constructor with initialization
 FSLPouringEvent::FSLPouringEvent(const FString& InId, float InStart, float InEnd, uint64 InPairId,
@@ -101,44 +101,66 @@ FString FSLPouringEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClient) c
 		+ TEXT("'");
 	FString TaskType = TEXT("soma:'Pouring'");
 	
+	
+	// get additional info for pouring event as JSonFString
+	FString AdditionalInfoJsonFString = CreateAdditionalInfoForPouringEvent();
+	//FString AdditionalInfoJsonFString = TEXT("test");
+	UE_LOG(LogTemp, Warning, TEXT("Additional info for pouring event: %s"), *AdditionalInfoJsonFString);
+
 	// create a pouring event
 	InFSLKRRestClient->SendCreateSubActionRequest(SubActionType, TaskType,
-		ObjectsPartcipated, double(StartTime), double(EndTime));
+		ObjectsPartcipated, AdditionalInfoJsonFString, double(StartTime), double(EndTime));
 
-	// Do additional calculation for poses and angles
-	float MaxPouringAngleX = -180, MaxPouringAngleY, MaxPouringAngleZ;
-	float MinPouringAngleX = 180, MinPouringAngleY, MinPouringAngleZ;
+	
+
+	return TEXT("Succeed!");
+}
+
+/**
+* This method will create a json string with all the necessary information for pouring event that needs to be logged in NEEM
+* The formate will be {	'SCName':'XYZ',
+						'DCName':'XYZ',
+						'MaxPouringAngle':{'X':,'Y':,'Z':},
+						'MinPouringAngle':{'X':,'Y':,'Z':},
+						'SCPoses':[
+							{'X':,'Y':,'Z':},
+							{'X':,'Y':,'Z':}
+						],
+						'DCPoses':[
+							{'X':,'Y':,'Z':},
+							{'X':,'Y':,'Z':}
+						]
+* 
+*/
+FString FSLPouringEvent::CreateAdditionalInfoForPouringEvent() const {
+
+	// Do calculation for poses along with max and min angles
+	FVector MaxPouringAngle, MinPouringAngle;
+	MaxPouringAngle.X = -180;
+	MinPouringAngle.X = 180;
 	TArray<FVector> SourceContainerPoses;
 	TArray<FVector> DestinationContainerPoses;
-
 
 	// logic for selection of Source or Destination Container poses Array object..
 	if (PouringEventTypes == USLPouringEventTypes::PouredOut) {
 		// pouring out event shows that the source container locations are stores in PouringPoseForSourceContainer
-		
+
 		for (FTransform PP : PouringPoseForSourceContainer) {
 			// if given container name is same as the one stored in tuple
-			float PPX = PP.GetRotation().Euler().X;
-			float PPY = PP.GetRotation().Euler().Y;
-			float PPZ = PP.GetRotation().Euler().Z;
+			FVector PPRotationEuler = PP.GetRotation().Euler();
 
 			// find min and max pouring angles
-			if (MaxPouringAngleX < PPX) {
-				MaxPouringAngleX = PPX;
-				MaxPouringAngleY = PPY;
-				MaxPouringAngleZ = PPZ;
-
+			if (MaxPouringAngle.X < PPRotationEuler.X) {
+				MaxPouringAngle = PPRotationEuler;
 			}
-			if (MinPouringAngleX > PPX) {
-				MinPouringAngleX = PPX;
-				MinPouringAngleY = PPY;
-				MinPouringAngleZ = PPZ;
+			if (MinPouringAngle.X > PPRotationEuler.X) {
+				MinPouringAngle = PPRotationEuler;
 			}
 
 			// get all poses for source container
 			SourceContainerPoses.Add(PP.GetTranslation());
 		}
-		
+
 	}
 	else {
 		// pouring out event will have destination locations stored in PouringPoseForSourceContainer
@@ -146,35 +168,150 @@ FString FSLPouringEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClient) c
 			DestinationContainerPoses.Add(PP.GetTranslation());
 		}
 	}
-	
 
-	FString MaxAngleStr = TEXT("X=") + FString::SanitizeFloat(MaxPouringAngleX) + TEXT(",Y=") + FString::SanitizeFloat(MaxPouringAngleY) + TEXT(",Z=") + FString::SanitizeFloat(MaxPouringAngleZ);
-	FString MinAngleStr = TEXT("X=") + FString::SanitizeFloat(MinPouringAngleX) + TEXT(",Y=") + FString::SanitizeFloat(MinPouringAngleY) + TEXT(",Z=") + FString::SanitizeFloat(MinPouringAngleZ);
-	FString SourceContainerPosesStr = TEXT("[");
-	for (FVector pose : SourceContainerPoses) {
-		SourceContainerPosesStr += TEXT("(X=") + FString::SanitizeFloat(pose.X) + TEXT(",Y=") + FString::SanitizeFloat(pose.Y) + TEXT(",Z=") 
-			+ FString::SanitizeFloat(pose.Z) + TEXT(")");
+	FString AdditionalInfoJsonObject = TEXT("{");
+
+	// add source and destination container names
+	AdditionalInfoJsonObject += FString::Printf(TEXT("\'SCName\':\'%s\'"),
+		*SourceContainerName);
+	// comma seperator
+	AdditionalInfoJsonObject += TEXT(",");
+
+	AdditionalInfoJsonObject += FString::Printf(TEXT("\'DCName\':\'%s\'"),
+		*DestinationContainerName);
+
+	// comma seperator
+	AdditionalInfoJsonObject += TEXT(",");
+
+	// add max pour angle
+	AdditionalInfoJsonObject += FString::Printf(TEXT("\'MaxPouringAngle\':{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'}"),
+		MaxPouringAngle.X, MaxPouringAngle.Y, MaxPouringAngle.Z);
+
+	// comma seperator
+	AdditionalInfoJsonObject += TEXT(",");
+
+	// add min pour angle
+	AdditionalInfoJsonObject += FString::Printf(TEXT("\'MinPouringAngle\':{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'}"),
+		MinPouringAngle.X, MinPouringAngle.Y, MinPouringAngle.Z);
+
+	// comma seperator
+	AdditionalInfoJsonObject += TEXT(",");
+
+	// add source container poses
+	AdditionalInfoJsonObject += FString::Printf(TEXT("\'SCPoses\':["));
+
+	// for each SCPose
+	int NumOfSCPoses = SourceContainerPoses.Num();
+	int Count = 0;
+	for (auto& SCPose : SourceContainerPoses) {
+		if (Count == (NumOfSCPoses - 1)) {
+			AdditionalInfoJsonObject += FString::Printf(TEXT("{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'}"),
+				SCPose.X, SCPose.Y, SCPose.Z);
+		}
+		else {
+			AdditionalInfoJsonObject += FString::Printf(TEXT("{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'},"),
+				SCPose.X, SCPose.Y, SCPose.Z);
+		}
+		Count++;
 	}
-	SourceContainerPosesStr += TEXT("]");
+	AdditionalInfoJsonObject += FString::Printf(TEXT("]"));
 
-	FString DestContainerPosesStr = TEXT("[");
-	for (FVector pose : DestinationContainerPoses) {
-		DestContainerPosesStr += TEXT("(") + FString::SanitizeFloat(pose.X) + TEXT(",") + FString::SanitizeFloat(pose.Y) + TEXT(",")
-			+ FString::SanitizeFloat(pose.Z) + TEXT(")");
+	// comma seperator
+	AdditionalInfoJsonObject += TEXT(",");
+
+	// add destination container poses
+	AdditionalInfoJsonObject += FString::Printf(TEXT("\'DCPoses\':["));
+
+	// for each SCPose
+	for (auto& DCPose : DestinationContainerPoses) {
+		AdditionalInfoJsonObject += FString::Printf(TEXT("{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'},"),
+			DCPose.X, DCPose.Y, DCPose.Z);
 	}
-	DestContainerPosesStr += TEXT("]");
+	AdditionalInfoJsonObject += FString::Printf(TEXT("]"));
 
-	if (PouringEventTypes == USLPouringEventTypes::PouredOut) {
-		InFSLKRRestClient->SendPouringAdditionalRequest(SubActionType, MaxAngleStr, MinAngleStr,
-			SourceContainerName, TEXT(""), SourceContainerPosesStr);
-	}
-	else {
-		InFSLKRRestClient->SendPouringAdditionalRequest(SubActionType, TEXT(""), TEXT(""),
-			TEXT(""), DestinationContainerName, DestContainerPosesStr);
-	}
 
-	
+	AdditionalInfoJsonObject += TEXT("}");
 
-	return TEXT("Succeed!");
+	return AdditionalInfoJsonObject;
 }
+
+// sending JsonObject as FString does not work for some reason, hence we need to create our own Json String representaion
+//FString FSLPouringEvent::CreateAdditionalInfoForPouringEvent() const{
+// 
+//	// Do calculation for poses along with max and min angles
+//	FVector MaxPouringAngle, MinPouringAngle;
+//	MaxPouringAngle.X = -180;
+//	MinPouringAngle.X = 180;
+//	TArray<FVector> SourceContainerPoses;
+//	TArray<FVector> DestinationContainerPoses;
+//
+//	// logic for selection of Source or Destination Container poses Array object..
+//	if (PouringEventTypes == USLPouringEventTypes::PouredOut) {
+//		// pouring out event shows that the source container locations are stores in PouringPoseForSourceContainer
+//
+//		for (FTransform PP : PouringPoseForSourceContainer) {
+//			// if given container name is same as the one stored in tuple
+//			FVector PPRotationEuler = PP.GetRotation().Euler();
+//
+//			// find min and max pouring angles
+//			if (MaxPouringAngle.X < PPRotationEuler.X) {
+//				MaxPouringAngle = PPRotationEuler;
+//			}
+//			if (MinPouringAngle.X > PPRotationEuler.X) {
+//				MinPouringAngle = PPRotationEuler;
+//			}
+//
+//			// get all poses for source container
+//			SourceContainerPoses.Add(PP.GetTranslation());
+//		}
+//
+//	}
+//	else {
+//		// pouring out event will have destination locations stored in PouringPoseForSourceContainer
+//		for (FTransform PP : PouringPoseForDestinationContainer) {
+//			DestinationContainerPoses.Add(PP.GetTranslation());
+//		}
+//	}
+//
+//	TSharedPtr<FJsonObject> AdditionalInfoJsonObject = MakeShareable(new FJsonObject());
+//	
+//	AdditionalInfoJsonObject->SetStringField("SCName", SourceContainerName);
+//	AdditionalInfoJsonObject->SetStringField("DCName", DestinationContainerName);
+//
+//	
+//	TSharedPtr<FJsonObject> MaxPouringAngleJson = MakeShareable(new FJsonObject());
+//	MaxPouringAngleJson->SetNumberField("X", MaxPouringAngle.X);
+//	MaxPouringAngleJson->SetNumberField("Y", MaxPouringAngle.Y);
+//	MaxPouringAngleJson->SetNumberField("Z", MaxPouringAngle.Z);
+//	AdditionalInfoJsonObject->SetObjectField("MaxPouringAngle", MaxPouringAngleJson);
+//
+//	TSharedPtr<FJsonObject> MinPouringAngleJson = MakeShareable(new FJsonObject());
+//	MinPouringAngleJson->SetNumberField("X", MinPouringAngle.X);
+//	MinPouringAngleJson->SetNumberField("Y", MinPouringAngle.Y);
+//	MinPouringAngleJson->SetNumberField("Z", MinPouringAngle.Z);
+//	AdditionalInfoJsonObject->SetObjectField("MinPouringAngle", MinPouringAngleJson);
+//
+//	TArray<TSharedPtr<FJsonValue>> SCPoseJsonArray;
+//	for (auto& SCPose : SourceContainerPoses) {
+//		SCPoseJsonArray.Add((MakeShareable(new FJsonValueString(SCPose.ToString()))));
+//	}
+//	
+//	AdditionalInfoJsonObject->SetArrayField("SCPoses", SCPoseJsonArray);
+//
+//	TArray<TSharedPtr<FJsonValue>> DCPoseJsonArray;
+//	for (auto& DCPose : DestinationContainerPoses) {
+//		DCPoseJsonArray.Add((MakeShareable(new FJsonValueString(DCPose.ToString()))));
+//	}
+//
+//	AdditionalInfoJsonObject->SetArrayField("DCPoses", DCPoseJsonArray);
+//
+//	FString AdditionalInfoJsonFString;
+//
+//	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&AdditionalInfoJsonFString);
+//
+//	FJsonSerializer::Serialize(AdditionalInfoJsonObject.ToSharedRef(), Writer);
+//
+//	return AdditionalInfoJsonFString;
+//}
+
 /* End ISLEvent interface */

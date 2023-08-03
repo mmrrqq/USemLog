@@ -83,8 +83,9 @@ FString FSLSupportedByEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClien
 	FString SubActionType = TEXT("soma:'Support'");
 	FString TaskType = TEXT("soma:'Supporting'");
 
+	FString AdditionalEventInfo = TEXT("");
 	InFSLKRRestClient->SendCreateSubActionRequest(SubActionType, TaskType,
-		ObjectsPartcipated, double(StartTime), double(EndTime));
+		ObjectsPartcipated, AdditionalEventInfo, double(StartTime), double(EndTime));
 
 	return TEXT("Succeed!");
 }

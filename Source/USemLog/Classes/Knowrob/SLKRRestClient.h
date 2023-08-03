@@ -42,7 +42,7 @@ public:
 	void SetGameStartUnixTime(double StartTime);
 
 	void SendCreateSubActionRequest(FString SubActionType, FString TaskType, 
-		FString ObjectsPartcipated, double StartTime, double EndTime);
+		FString ObjectsPartcipated, FString AdditionalEventInfo, double StartTime, double EndTime);
 
 	void SendPouringAdditionalRequest(FString SubActionType, FString MaxPouringAngle, FString MinPouringAngle,
 		FString SourceContainer, FString DestinationContainer, FString PouringPose);

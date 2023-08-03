@@ -192,8 +192,9 @@ FString FSLSlicingEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClient) c
 	FString SubActionType = TEXT("soma:'Slice'");
 	FString TaskType = TEXT("soma:'Slicing'");
 
+	FString AdditionalEventInfo = TEXT("");
 	InFSLKRRestClient->SendCreateSubActionRequest(SubActionType, TaskType,
-		ObjectsPartcipated, double(StartTime), double(EndTime));
+		ObjectsPartcipated, AdditionalEventInfo, double(StartTime), double(EndTime));
 
 	return TEXT("Succeed!");
 }
