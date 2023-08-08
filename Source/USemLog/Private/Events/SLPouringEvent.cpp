@@ -169,70 +169,70 @@ FString FSLPouringEvent::CreateAdditionalInfoForPouringEvent() const {
 		}
 	}
 
-	FString AdditionalInfoJsonObject = TEXT("{");
+	FString AdditionalInfoJsonString = TEXT("{");
 
 	// add source and destination container names
-	AdditionalInfoJsonObject += FString::Printf(TEXT("\'SCName\':\'%s\'"),
+	AdditionalInfoJsonString += FString::Printf(TEXT("\'SCName\':\'%s\'"),
 		*SourceContainerName);
 	// comma seperator
-	AdditionalInfoJsonObject += TEXT(",");
+	AdditionalInfoJsonString += TEXT(",");
 
-	AdditionalInfoJsonObject += FString::Printf(TEXT("\'DCName\':\'%s\'"),
+	AdditionalInfoJsonString += FString::Printf(TEXT("\'DCName\':\'%s\'"),
 		*DestinationContainerName);
 
 	// comma seperator
-	AdditionalInfoJsonObject += TEXT(",");
+	AdditionalInfoJsonString += TEXT(",");
 
 	// add max pour angle
-	AdditionalInfoJsonObject += FString::Printf(TEXT("\'MaxPouringAngle\':{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'}"),
+	AdditionalInfoJsonString += FString::Printf(TEXT("\'MaxPouringAngle\':{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'}"),
 		MaxPouringAngle.X, MaxPouringAngle.Y, MaxPouringAngle.Z);
 
 	// comma seperator
-	AdditionalInfoJsonObject += TEXT(",");
+	AdditionalInfoJsonString += TEXT(",");
 
 	// add min pour angle
-	AdditionalInfoJsonObject += FString::Printf(TEXT("\'MinPouringAngle\':{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'}"),
+	AdditionalInfoJsonString += FString::Printf(TEXT("\'MinPouringAngle\':{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'}"),
 		MinPouringAngle.X, MinPouringAngle.Y, MinPouringAngle.Z);
 
 	// comma seperator
-	AdditionalInfoJsonObject += TEXT(",");
+	AdditionalInfoJsonString += TEXT(",");
 
 	// add source container poses
-	AdditionalInfoJsonObject += FString::Printf(TEXT("\'SCPoses\':["));
+	AdditionalInfoJsonString += FString::Printf(TEXT("\'SCPoses\':["));
 
 	// for each SCPose
 	int NumOfSCPoses = SourceContainerPoses.Num();
 	int Count = 0;
 	for (auto& SCPose : SourceContainerPoses) {
 		if (Count == (NumOfSCPoses - 1)) {
-			AdditionalInfoJsonObject += FString::Printf(TEXT("{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'}"),
+			AdditionalInfoJsonString += FString::Printf(TEXT("{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'}"),
 				SCPose.X, SCPose.Y, SCPose.Z);
 		}
 		else {
-			AdditionalInfoJsonObject += FString::Printf(TEXT("{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'},"),
+			AdditionalInfoJsonString += FString::Printf(TEXT("{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'},"),
 				SCPose.X, SCPose.Y, SCPose.Z);
 		}
 		Count++;
 	}
-	AdditionalInfoJsonObject += FString::Printf(TEXT("]"));
+	AdditionalInfoJsonString += FString::Printf(TEXT("]"));
 
 	// comma seperator
-	AdditionalInfoJsonObject += TEXT(",");
+	AdditionalInfoJsonString += TEXT(",");
 
 	// add destination container poses
-	AdditionalInfoJsonObject += FString::Printf(TEXT("\'DCPoses\':["));
+	AdditionalInfoJsonString += FString::Printf(TEXT("\'DCPoses\':["));
 
 	// for each SCPose
 	for (auto& DCPose : DestinationContainerPoses) {
-		AdditionalInfoJsonObject += FString::Printf(TEXT("{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'},"),
+		AdditionalInfoJsonString += FString::Printf(TEXT("{\'X\':\'%lf\',\'Y\':\'%lf\',\'Z\':\'%lf\'},"),
 			DCPose.X, DCPose.Y, DCPose.Z);
 	}
-	AdditionalInfoJsonObject += FString::Printf(TEXT("]"));
+	AdditionalInfoJsonString += FString::Printf(TEXT("]"));
 
 
-	AdditionalInfoJsonObject += TEXT("}");
+	AdditionalInfoJsonString += TEXT("}");
 
-	return AdditionalInfoJsonObject;
+	return AdditionalInfoJsonString;
 }
 
 // sending JsonObject as FString does not work for some reason, hence we need to create our own Json String representaion
