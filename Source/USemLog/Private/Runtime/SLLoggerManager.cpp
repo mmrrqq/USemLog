@@ -237,7 +237,7 @@ void ASLLoggerManager::Start()
 		}
 	}
 
-	// TODO: remoev this code when in VR mode. call the NEEM rest API to create a new NEEM Episode
+	// TODO: remove this code when in VR mode. call the NEEM rest API to create a new NEEM Episode
 	if (bCreateNEEM) {
 		// call create an episode once per game, check if it is already created 
 		if (!isEpisodeCreated) {

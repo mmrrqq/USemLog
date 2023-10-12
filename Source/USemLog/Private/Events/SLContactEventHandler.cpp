@@ -200,7 +200,7 @@ void FSLContactEventHandler::FinishAllEvents(float EndTime)
 		// Ignore short events
 		if (EndTime - Ev->StartTime > PouringEventMin)
 		{
-			// Set end time and publish event
+			// Set additional info for pouring event
 			Ev->NumberOfParticles = particlesOverlapEnded;
 			Ev->PouringPoseForSourceContainer = PouringPoseForSourceContainer;
 			Ev->PouringPoseForDestinationContainer = PouringPoseForDestinationContainer;
@@ -233,14 +233,14 @@ if (InResult.Other->GetClass() == USLParticleIndividual::StaticClass() &&
 				FSLUuid::PairEncodeCantor(InResult.Self->GetUniqueID(), InResult.Other->GetUniqueID()),
 				InResult.Self, InResult.Other, USLPouringEventTypes::PouredOut));
 			CurrentPouringEvent->EpisodeId = EpisodeId;
-			CurrentPouringEvent->SourceContainerName = InResult.Self->GetClassValue();
+			CurrentPouringEvent->SourceContainerName = InResult.Self->GetParentActor()->GetActorLabel();
 			// Add event to the pending Pourings array
 			StartedPouringEvents.Emplace(CurrentPouringEvent);
 
 		}
 
 		// needs to keep updated due to potential role change in next event
-		SourceContainersList.Add({ InResult.Self->GetClassValue(), InResult.Time });
+		SourceContainersList.Add({ InResult.Self->GetParentActor()->GetActorLabel(), InResult.Time });
 		
 		// Add current pose for source container
 		PouringPoseForSourceContainer.Add(InResult.Self->GetCachedPose());
@@ -266,13 +266,13 @@ if (InResult.Other->GetClass() == USLParticleIndividual::StaticClass() &&
 				FSLUuid::PairEncodeCantor(InResult.Self->GetUniqueID(), InResult.Other->GetUniqueID()),
 				InResult.Self, InResult.Other, USLPouringEventTypes::PouredInto));
 			CurrentPouringEvent->EpisodeId = EpisodeId;
-			CurrentPouringEvent->DestinationContainerName = InResult.Self->GetClassValue();
+			CurrentPouringEvent->DestinationContainerName = InResult.Self->GetParentActor()->GetActorLabel();
 			// Add event to the pending Pourings array
 			StartedPouringEvents.Emplace(CurrentPouringEvent);
 		}
 
 		// needs to keep updated due to potential role change in next event
-		DestinationContainersList.Add({ InResult.Self->GetClassValue(), InResult.Time });
+		DestinationContainersList.Add({ InResult.Self->GetParentActor()->GetActorLabel(), InResult.Time });
 		// Add current pose for desti container
 		PouringPoseForDestinationContainer.Add(InResult.Self->GetCachedPose());
 
@@ -291,7 +291,7 @@ if (InResult.Other->GetClass() == USLParticleIndividual::StaticClass() &&
 bool FSLContactEventHandler::IsPouringEventCurrentlyRunning(TArray<std::tuple<FString, float>> Containers, const FSLContactResult& InResult) {
 	for (std::tuple<FString, float> Container : Containers) {
 		// check for the same container if the time is below limit or above?
-		if (std::get<0>(Container) == InResult.Self->GetClassValue()) {
+		if (std::get<0>(Container) == InResult.Self->GetParentActor()->GetActorLabel()) {
 			// if the pouring event with same container lasts more than 5 seconds, a new event will be created
 			if((InResult.Time - std::get<1>(Container)) < MaxPouringEventTime)
 				return true;
