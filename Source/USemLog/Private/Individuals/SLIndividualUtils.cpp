@@ -31,6 +31,8 @@
 #include "Gaze/SLGazeTargetActor.h"
 #include "Gaze/SLGazeOriginActor.h"
 #include "Actors/SLPouringParticleAgentClass.h"
+#include "Actors/SLCutterAgentClass.h"
+#include "Actors/SLCuttieAgentClass.h"
 #include "Actors/SLStaticMeshAgentClass.h"
 
 #if WITH_EDITOR
@@ -600,9 +602,17 @@ USLBaseIndividual* FSLIndividualUtils::CreateIndividualObject(UObject* Outer, AA
 	{
 		return NewObject<USLBaseIndividual>(Outer, USLSkyIndividual::StaticClass());
 	}
-	else if (Owner->IsA(ASLPouringParticleAgentClass::StaticClass()) || Owner->IsA(ASLPouringParticleAgentClass::StaticClass()))
+	else if (Owner->IsA(ASLPouringParticleAgentClass::StaticClass()))
 	{
 		return NewObject<USLParticleIndividual>(Outer, USLParticleIndividual::StaticClass());
+	}
+	else if (Owner->IsA(ASLCutterAgentClass::StaticClass()))
+	{
+		return NewObject<USLCutterIndividual>(Outer, USLCutterIndividual::StaticClass());
+	}
+	else if (Owner->IsA(ASLCuttieAgentClass::StaticClass()))
+	{
+		return NewObject<USLCuttieIndividual>(Outer, USLCuttieIndividual::StaticClass());
 	}
 	else if (Owner->IsA(ASLStaticMeshAgentClass::StaticClass()) || Owner->IsA(ASLStaticMeshAgentClass::StaticClass()))
 	{
@@ -795,6 +805,8 @@ bool FSLIndividualUtils::CanHaveIndividualComponent(AActor* Actor)
 		|| Actor->IsA(ASkyLight::StaticClass())
 		|| Actor->IsA(ASLVirtualCameraView::StaticClass())
 		|| Actor->IsA(ASLPouringParticleAgentClass::StaticClass())
+		|| Actor->IsA(ASLCutterAgentClass::StaticClass())
+		|| Actor->IsA(ASLCuttieAgentClass::StaticClass())
 		|| Actor->IsA(ASLStaticMeshAgentClass::StaticClass())
 		|| Actor->GetName().Contains("SkySphere");
 }

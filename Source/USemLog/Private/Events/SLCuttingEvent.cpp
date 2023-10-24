@@ -1,14 +1,16 @@
 // Copyright 2017-present, Institute for Artificial Intelligence - University of Bremen
 // Author: Andrei Haidu (http://haidu.eu)
 
-#include "Events/SLContactEvent.h"
+#include "Events/SLCuttingEvent.h"
 #include "Individuals/Type/SLBaseIndividual.h"
 #include "Owl/SLOwlExperimentStatics.h"
+#include <iostream>
+#include <string>  
 
 // Constructor with initialization
-FSLContactEvent::FSLContactEvent(const FString& InId, float InStart, float InEnd, uint64 InPairId,
+FSLCuttingEvent::FSLCuttingEvent(const FString& InId, float InStart, float InEnd, uint64 InPairId,
 	USLBaseIndividual* InIndividual1,
-	USLBaseIndividual* InIndividual2) :
+	USLBaseIndividual* InIndividual2):
 	ISLEvent(InId, InStart, InEnd),
 	PairId(InPairId),
 	Individual1(InIndividual1), 
@@ -17,9 +19,9 @@ FSLContactEvent::FSLContactEvent(const FString& InId, float InStart, float InEnd
 }
 
 // Constructor initialization without end time
-FSLContactEvent::FSLContactEvent(const FString& InId, float InStart, uint64 InPairId,
+FSLCuttingEvent::FSLCuttingEvent(const FString& InId, float InStart, uint64 InPairId,
 	USLBaseIndividual* InIndividual1,
-	USLBaseIndividual* InIndividual2) :
+	USLBaseIndividual* InIndividual2):
 	ISLEvent(InId, InStart),
 	PairId(InPairId),
 	Individual1(InIndividual1),
@@ -29,21 +31,23 @@ FSLContactEvent::FSLContactEvent(const FString& InId, float InStart, uint64 InPa
 
 /* Begin ISLEvent interface */
 // Get an owl representation of the event
-FSLOwlNode FSLContactEvent::ToOwlNode() const
+FSLOwlNode FSLCuttingEvent::ToOwlNode() const
 {
-	// Create the contact event node
+	// Create the Cutting event node
+	FString EventName = "CuttingSituation:Cutting";
+	
 	FSLOwlNode EventIndividual = FSLOwlExperimentStatics::CreateEventIndividual(
-		"log", Id, "TouchingSituation");
+		"log", Id, EventName);
 	EventIndividual.AddChildNode(FSLOwlExperimentStatics::CreateStartTimeProperty("log", StartTime));
 	EventIndividual.AddChildNode(FSLOwlExperimentStatics::CreateEndTimeProperty("log", EndTime));
+	EventIndividual.AddChildNode(FSLOwlExperimentStatics::CreateInEpisodeProperty("log", EpisodeId));
 	EventIndividual.AddChildNode(FSLOwlExperimentStatics::CreateInContactProperty("log", Individual1->GetIdValue()));
 	EventIndividual.AddChildNode(FSLOwlExperimentStatics::CreateInContactProperty("log", Individual2->GetIdValue()));
-	EventIndividual.AddChildNode(FSLOwlExperimentStatics::CreateInEpisodeProperty("log", EpisodeId));
 	return EventIndividual;
 }
 
 // Add the owl representation of the event to the owl document
-void FSLContactEvent::AddToOwlDoc(FSLOwlDoc* OutDoc)
+void FSLCuttingEvent::AddToOwlDoc(FSLOwlDoc* OutDoc)
 {
 	// Add timepoint individuals
 	// We know that the document is of type FOwlExperiment,
@@ -58,45 +62,46 @@ void FSLContactEvent::AddToOwlDoc(FSLOwlDoc* OutDoc)
 }
 
 // Get event context data as string (ToString equivalent)
-FString FSLContactEvent::Context() const
+FString FSLCuttingEvent::Context() const
 {
-	return FString::Printf(TEXT("Contact - %lld"), PairId);
+	FString EventType = FString("Cutting");
+	return FString::Printf(TEXT("%s - %lld"), *EventType , PairId);
 }
 
 // Get the tooltip data
-FString FSLContactEvent::Tooltip() const
+FString FSLCuttingEvent::Tooltip() const
 {
-	return FString::Printf(TEXT("\'O1\',\'%s\',\'Id\',\'%s\',\'O2\',\'%s\',\'Id\',\'%s\',\'Id\',\'%s\'"),
+	return FString::Printf(TEXT("\'O1\',\'%s\',\'Id\',\'%s\',\'O2\',\'%s\',\'Id\',\'%s\', \'Id\',\'%s\'"),
 		*Individual1->GetClassValue(), *Individual1->GetIdValue(), *Individual2->GetClassValue(), *Individual2->GetIdValue(), *Id);
 }
 
 // Get the data as string
-FString FSLContactEvent::ToString() const
+FString FSLCuttingEvent::ToString() const
 {
 	return FString::Printf(TEXT("Individual1:[%s] Individual2:[%s] PairId:%lld"),
 		*Individual1->GetInfo(), *Individual2->GetInfo(), PairId);
 }
 
-FString FSLContactEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClient) const
+FString FSLCuttingEvent::RESTCallToKnowRob(FSLKRRestClient* InFSLKRRestClient) const
 {
 	// Call REST method to create sub actions on KnowRob side...
-	// TODO: send here the roles of each objects that participated in to the event and 
-	// log on KnowRob side proper roles as well as type of objects, 
 	// somaClassName:somaIndividualName is sent at the moment for objects participated
 	FString ObjectsPartcipated = TEXT("[") 
 		+ Individual1->GetClassValue() + TEXT(":") + Individual1->GetParentActor()->GetActorLabel() 
-		+ TEXT(",") +
-		Individual2->GetClassValue() + TEXT(":") + Individual2->GetParentActor()->GetActorLabel() 
+		+ TEXT(",") 
+		+ Individual2->GetClassValue() + TEXT(":") + Individual2->GetParentActor()->GetActorLabel() 
 		+ TEXT("]");
 
+	FString SubActionType = TEXT("soma:'Cut'");
+	FString TaskType = TEXT("soma:'Cutting'");
+	
+	FString AdditionalEventInfo = TEXT("");
 
-	FString SubActionType = TEXT("soma:'Contact'");
-	// TODO: create new concept called Touching in SOMA task branch
-	FString TaskType = TEXT("soma:'InContact'");
+	// create a Cutting event
+	InFSLKRRestClient->SendCreateSubActionRequest(SubActionType, TaskType,
+		ObjectsPartcipated, AdditionalEventInfo, double(StartTime), double(EndTime));
 
-	 
-	/*InFSLKRRestClient->SendCreateSubActionRequest(SubActionType, TaskType,
-		ObjectsPartcipated, AdditionalEventInfo, double(StartTime), double(EndTime));*/
+	
 
 	return TEXT("Succeed!");
 }

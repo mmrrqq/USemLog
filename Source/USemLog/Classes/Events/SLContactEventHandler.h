@@ -13,6 +13,7 @@ class FSLContactEvent;
 class FSLSupportedByEvent;
 struct FSLContactResult;
 class FSLPouringEvent;
+class FSLCuttingEvent;
 
 /**
  * Listens to contact events input, and outputs finished semantic contact events
@@ -36,8 +37,14 @@ private:
 	// Finish then publish the event
 	bool FinishContactEvent(USLBaseIndividual* InOther, float EndTime);
 
+	// Finish then publish the event
+	bool FinishCuttingEvent(USLBaseIndividual* InOther, float EndTime);
+
 	// Start new Pouring event
 	void AddNewPouringEvent(const FSLContactResult& InResult);
+
+	// Start new Cutting event
+	void AddNewCuttingEvent(const FSLContactResult& InResult);
 
 	// Finish then publish the event
 	bool FinishPouringEvent(USLBaseIndividual* InOther, float EndTime);
@@ -82,12 +89,16 @@ private:
 	// Array of started Pouring events
 	TArray<TSharedPtr<FSLPouringEvent>> StartedPouringEvents;
 
+	// Array of started Cutting events
+	TArray<TSharedPtr<FSLCuttingEvent>> StartedCuttingEvents;
+
 	bool IsPouringEventCurrentlyRunning(TArray<std::tuple<FString, float>> Containers, const FSLContactResult& InResult);
 	
 	/* Constant values */
 	constexpr static float ContactEventMin = 0.01f;
 	constexpr static float SupportedByEventMin = 0.4f;
 	constexpr static float PouringEventMin = 0.03f;
+	constexpr static float CuttingEventMin = 0.03f;
 	int particlesOverlapEnded = 0;
 	TArray<FTransform> PouringPoseForSourceContainer;
 	TArray<FTransform> PouringPoseForDestinationContainer;
@@ -104,6 +115,8 @@ private:
 	float MaxPouringEventTime = 5;
 	TSharedPtr<FSLPouringEvent> CurrentPouringEvent;
 
+	TSharedPtr<FSLCuttingEvent> CurrentCuttingEvent;
 
+	
 
 };
