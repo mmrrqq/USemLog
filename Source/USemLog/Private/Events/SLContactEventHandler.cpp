@@ -434,7 +434,7 @@ void FSLContactEventHandler::AddNewCuttingEvent(const FSLContactResult& InResult
 	//AStaticMeshActor* ASLCutter = Cast<AStaticMeshActor>(InResult.Self);
 	//UActorComponent* comp = GetComponentByClass(ASLCutter::StaticClass());
 
-	// Start a semantic Pouring event, check if the source container has required angles around X and Y axis in oder to consider it as source container	
+	// Start a semantic Cutting event
 	if (1) {
 		// Log a new cutting event.
 		UE_LOG(LogTemp, Display, TEXT("Cutting event detected"));
