@@ -2,27 +2,56 @@
 
 
 #include "Actors/SLCutterAgentClass.h"
-#include <Runtime/Engine/Classes/Kismet/GameplayStatics.h>
+// Copyright 2017-2021, Institute for Artificial Intelligence - University of Bremen
 
-// Sets default values
+
 ASLCutterAgentClass::ASLCutterAgentClass()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-	mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	RootComponent = mesh;
 
 }
 
-// Called when the game starts or when spawned
+
 void ASLCutterAgentClass::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Let the function listen to the Event
+	CuttingSucceededEvent.AddDynamic(this, &ASLCutterAgentClass::ObjectCut);
+
 }
 
-// Called every frame
-void ASLCutterAgentClass::Tick(float DeltaTime)
+void ASLCutterAgentClass::ObjectCut(float val)
 {
-	Super::Tick(DeltaTime);
+	//Write in Console 
+	UE_LOG(LogTemp, Warning, TEXT("%s::%d Sucessfully triggered Event CutterActor: %d"),
+		*FString(__func__), __LINE__, val);
 
 }
+
+bool ASLCutterAgentClass::CuttingStarted() {
+	//Write in Console 
+	UE_LOG(LogTemp, Warning, TEXT("%s::%d Sucessfully started cutting Event"));
+	
+
+	return true;
+	// Start new Cutting event
+
+
+}
+bool ASLCutterAgentClass::CuttingAborted() {
+	//Write in Console 
+	UE_LOG(LogTemp, Warning, TEXT("%s::%d Sucessfully aborted cutting Event"));
+	return true;
+}
+bool ASLCutterAgentClass::CuttingSucceeded() {
+	//Write in Console 
+	UE_LOG(LogTemp, Warning, TEXT("%s::%d Sucessfully finished cutting Event"));
+	CuttingSucceededEvent.Broadcast(1);
+
+	return true;
+}
+
+bool ASLCutterAgentClass::CuttingIntented() {
+	return true;
+}
+

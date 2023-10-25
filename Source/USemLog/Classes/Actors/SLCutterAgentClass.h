@@ -5,27 +5,52 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Engine/StaticMeshActor.h"
 #include "SLCutterAgentClass.generated.h"
 
+//To be callable by blueprints it has to be DynamicMulticast
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCuttingSucceeded, float, input);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCuttingStarted, float, input);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCuttingAborted, float, input);
+
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FReserve);
+
 UCLASS(ClassGroup = (SL), DisplayName = "SL Cutter Actor")
-class USEMLOG_API ASLCutterAgentClass : public AActor
+class USEMLOG_API ASLCutterAgentClass : public AStaticMeshActor
 {
 	GENERATED_BODY()
 
+private:
+	bool isCutting;
+
 public:
-	// Sets default values for this actor's properties
 	ASLCutterAgentClass();
 
-	UPROPERTY(EditAnyWhere)
-		UStaticMeshComponent* mesh;
+	//Let the Event be Assignable (connect Listeners), and be Callable by blueprints
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Test")
+		FCuttingSucceeded CuttingSucceededEvent;
+
+	//Create a basic function
+	UFUNCTION(Category = "EventTest")
+		void ObjectCut(float val);
+
+
+	//ToDo fill with parameters needed
+	UFUNCTION(BlueprintCallable)
+		bool CuttingSucceeded();
+
+	UFUNCTION(BlueprintCallable)
+		bool CuttingIntented();
+
+	UFUNCTION(BlueprintCallable)
+		bool CuttingStarted();
+
+	UFUNCTION(BlueprintCallable)
+		bool CuttingAborted();
+
 
 protected:
-	// Called when the game starts or when spawned
+	// Called when the game starts
 	virtual void BeginPlay() override;
-
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 };

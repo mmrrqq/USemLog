@@ -19,6 +19,8 @@
 #include "Engine/Engine.h"
 
 
+
+
 // Set parent
 void FSLContactEventHandler::Init(UObject* InParent)
 {
@@ -248,6 +250,8 @@ void FSLContactEventHandler::FinishAllEvents(float EndTime)
 		}
 	}
 
+	StartedPouringEvents.Empty();
+
 	// Finish cutting events
 	for (auto& Ev : StartedCuttingEvents)
 	{
@@ -260,7 +264,7 @@ void FSLContactEventHandler::FinishAllEvents(float EndTime)
 		}
 	}
 
-	StartedPouringEvents.Empty();
+	StartedCuttingEvents.Empty();
 }
 
 // Start new Pouring event
@@ -427,10 +431,11 @@ void FSLContactEventHandler::OnSLPouringEnds(USLBaseIndividual* Self, USLBaseInd
 // Start new Cutting event
 void FSLContactEventHandler::AddNewCuttingEvent(const FSLContactResult& InResult)
 {
+	//AStaticMeshActor* ASLCutter = Cast<AStaticMeshActor>(InResult.Self);
+	//UActorComponent* comp = GetComponentByClass(ASLCutter::StaticClass());
 
 	// Start a semantic Pouring event, check if the source container has required angles around X and Y axis in oder to consider it as source container	
-	if (InResult.Self->GetClass() == USLCutterIndividual::StaticClass() &&
-		InResult.Other->GetClass() == USLCuttieIndividual::StaticClass()) {
+	if (1) {
 		// Log a new cutting event.
 		UE_LOG(LogTemp, Display, TEXT("Cutting event detected"));
 		CurrentCuttingEvent = MakeShareable(new FSLCuttingEvent(

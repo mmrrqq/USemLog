@@ -29,6 +29,7 @@ FSLCuttingEvent::FSLCuttingEvent(const FString& InId, float InStart, uint64 InPa
 {
 }
 
+
 /* Begin ISLEvent interface */
 // Get an owl representation of the event
 FSLOwlNode FSLCuttingEvent::ToOwlNode() const

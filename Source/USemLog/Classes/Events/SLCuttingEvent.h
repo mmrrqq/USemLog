@@ -25,6 +25,7 @@ public:
 	// Constructor initialization without end time
 	FSLCuttingEvent(const FString& InId, const float InStart, const uint64 InPairId,
 		USLBaseIndividual* InIndividual1, USLBaseIndividual* InIndividual2);
+
 	
 
 	// Pair id of the event (combination of two unique runtime ids)

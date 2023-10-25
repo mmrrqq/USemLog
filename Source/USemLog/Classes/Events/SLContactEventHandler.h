@@ -4,7 +4,11 @@
 #pragma once
 #include <tuple> // for tuple
 #include <string>
+//#include "../../UVRHands/Source/UVRHands/Public/SLCutter.h"
+#include "Actors/SLCutterAgentClass.h"
+#include "Engine/StaticMeshActor.h"
 #include "Events/ISLEventHandler.h"
+
 
 
 // Forward declarations
@@ -14,6 +18,7 @@ class FSLSupportedByEvent;
 struct FSLContactResult;
 class FSLPouringEvent;
 class FSLCuttingEvent;
+ 
 
 /**
  * Listens to contact events input, and outputs finished semantic contact events
@@ -116,7 +121,5 @@ private:
 	TSharedPtr<FSLPouringEvent> CurrentPouringEvent;
 
 	TSharedPtr<FSLCuttingEvent> CurrentCuttingEvent;
-
 	
-
 };
