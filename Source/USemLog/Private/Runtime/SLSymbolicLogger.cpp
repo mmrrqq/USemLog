@@ -22,12 +22,17 @@
 #include "Events/SLReachAndPreGraspEventHandler.h"
 #include "Events/SLPickAndPlaceEventsHandler.h"
 #include "Events/SLContainerEventHandler.h"
+#include <Events/SLCuttingEventHandler.h>
+#include <Events/SLCleaningEventHandler.h>
 
 #include "Monitors/SLContactMonitorInterface.h"
 #include "Monitors/SLManipulatorMonitor.h"
 #include "Monitors/SLReachAndPreGraspMonitor.h"
 #include "Monitors/SLPickAndPlaceMonitor.h"
 #include "Monitors/SLContainerMonitor.h"
+
+#include "Actors/SLCutterAgentClass.h"
+#include "Actors/SLCleanerAgent.h"
 
 #include "Owl/SLOwlExperimentStatics.h"
 
@@ -44,6 +49,7 @@
 #if WITH_EDITOR
 #include "Components/BillboardComponent.h"
 #endif // WITH_EDITOR
+
 
 // Sets default values
 ASLSymbolicLogger::ASLSymbolicLogger()
@@ -214,6 +220,9 @@ void ASLSymbolicLogger::InitImpl()
 		InitReachAndPreGraspMonitors();
 		InitManipulatorContactAndGraspMonitors();
 		InitPickAndPlaceMonitors();
+
+		InitCuttingAgents();
+		InitCleaningAgents();
 		//InitManipulatorGraspFixationMonitors();
 		/*InitManipulatorContainerMonitors();
 		InitSlicingMonitors();*/
@@ -258,6 +267,16 @@ void ASLSymbolicLogger::InitImpl()
 				UE_LOG(LogTemp, Error, TEXT("%s::%d Pick-and-Place monitors only work if grasp events are enabled.."),
 					*FString(__FUNCTION__), __LINE__);
 			}
+		}
+
+		if (LoggerParameters.EventsSelection.bCutting) 
+		{
+			InitCuttingAgents();
+		}
+
+		if (LoggerParameters.EventsSelection.bCleaning)
+		{
+			InitCleaningAgents();
 		}
 
 		//if (LoggerParameters.EventsSelection.bSlicing)
@@ -811,6 +830,78 @@ void ASLSymbolicLogger::InitPickAndPlaceMonitors()
 	}
 }
 
+void ASLSymbolicLogger::InitCuttingAgents()
+{
+	
+	for (TActorIterator<ASLCutterAgentClass> Itr(GetWorld()); Itr; ++Itr) //Reserve if the other not works
+	//for (TObjectIterator<ASLCutterAgentClass> Itr; Itr; ++Itr)
+	{
+		//UE_LOG(LogTemp, Error, TEXT("Found a CutterObject"));
+		if (IsValidAndLoaded(*Itr))
+		{
+			Itr->Init();
+			if (Itr->IsInit())
+			{
+				CuttingAgents.Emplace(*Itr);
+				TSharedPtr<SLCuttingEventHandler> EvHandler = MakeShareable(new SLCuttingEventHandler());
+				EvHandler->Init(*Itr);
+				EvHandler->EpisodeId = LocationParameters.EpisodeId;
+				if (EvHandler->IsInit())
+				{
+					EventHandlers.Add(EvHandler);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("%s::%d %s::%s's handler could not be init.."),
+						*FString(__func__), __LINE__, *Itr->GetName(), *Itr->GetName());
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("%s::%d %s::%s's monitor could not be init.."),
+					*FString(__func__), __LINE__, *Itr->GetName(), *Itr->GetName());
+			}
+		}
+	}
+}
+
+void ASLSymbolicLogger::InitCleaningAgents()
+{
+
+	for (TActorIterator<ASLCleanerAgent> Itr(GetWorld()); Itr; ++Itr) //Reserve if the other not works
+		//for (TObjectIterator<ASLCutterAgentClass> Itr; Itr; ++Itr)
+	{
+		//UE_LOG(LogTemp, Error, TEXT("Found a CutterObject"));
+		if (IsValidAndLoaded(*Itr))
+		{
+			Itr->Init();
+			if (Itr->IsInit())
+			{
+				CleaningAgents.Emplace(*Itr);
+				TSharedPtr<SLCleaningEventHandler> EvHandler = MakeShareable(new SLCleaningEventHandler());
+				EvHandler->Init(*Itr);
+				EvHandler->EpisodeId = LocationParameters.EpisodeId;
+				if (EvHandler->IsInit())
+				{
+					EventHandlers.Add(EvHandler);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("%s::%d %s::%s's handler could not be init.."),
+						*FString(__func__), __LINE__, *Itr->GetName(), *Itr->GetName());
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("%s::%d %s::%s's monitor could not be init.."),
+					*FString(__func__), __LINE__, *Itr->GetName(), *Itr->GetName());
+			}
+		}
+	}
+}
+
+
+
 // Iterate and init the slicing monitors
 void ASLSymbolicLogger::InitSlicingMonitors()
 {
@@ -838,6 +929,8 @@ void ASLSymbolicLogger::InitSlicingMonitors()
 	}
 #endif // SL_WITH_SLICING
 }
+
+
 
 // Publish data through ROS
 void ASLSymbolicLogger::InitROSPublisher()

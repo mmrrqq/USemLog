@@ -1,8 +1,8 @@
-// Copyright 2017-present, Institute for Artificial Intelligence - University of Bremen
-// Author: Abijit Vyas
+// Copyright 2017-2021, Institute for Artificial Intelligence - University of Bremen
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include "ISLEvent.h"
 #include <tuple> // for tuple
 
@@ -10,33 +10,30 @@
 class USLBaseIndividual;
 
 
-
-enum class USLCuttingInfo : int32
+enum class USLCleaningStatus : int32
 {
-	CuttingSucceed = 1,
-	CuttingAborted = 2,
+	CleaningNotFullyFinished = 1,
+	CleaningFinished = 2,
 	NoInfo = 0
 };
 
 
 /**
-* Cutting event class
-*/
-class FSLCuttingEvent : public ISLEvent
+ * 
+ */
+class FSLCleaningEvent : public ISLEvent
 {
 public:
-	// Default constructor
-	FSLCuttingEvent() = default;
-
+	FSLCleaningEvent();
+	~FSLCleaningEvent();
 	// Constructor with initialization
-	FSLCuttingEvent(const FString& InId, float InStart, float InEnd, uint64 InPairId,
+	FSLCleaningEvent(const FString& InId, float InStart, float InEnd, uint64 InPairId,
 		USLBaseIndividual* InIndividual1, USLBaseIndividual* InIndividual2);
 
 	// Constructor initialization without end time
-	FSLCuttingEvent(const FString& InId, const float InStart, const uint64 InPairId,
+	FSLCleaningEvent(const FString& InId, const float InStart, const uint64 InPairId,
 		USLBaseIndividual* InIndividual1, USLBaseIndividual* InIndividual2);
 
-	
 
 	// Pair id of the event (combination of two unique runtime ids)
 	uint64 PairId;
@@ -47,7 +44,7 @@ public:
 	// Individual2 in Cutting
 	USLBaseIndividual* Individual2;
 
-	USLCuttingInfo CuttingInformation = USLCuttingInfo::NoInfo;
+	USLCleaningStatus CuttingInformation = USLCleaningStatus::NoInfo;
 
 	/* Begin IEvent interface */
 	// Create an owl representation of the event
@@ -55,7 +52,7 @@ public:
 
 	// Add the owl representation of the event to the owl document
 	virtual void AddToOwlDoc(FSLOwlDoc* OutDoc) override;
-	
+
 	// Send through ROSBridge
 	virtual FString ToROSQuery() const override { return ""; };
 
@@ -69,7 +66,7 @@ public:
 	virtual FString ToString() const override;
 
 	// Get the event type name
-	virtual FString TypeName() const override { return FString(TEXT("Cutting")); };
+	virtual FString TypeName() const override { return FString(TEXT("Cleaning")); };
 	/* End IEvent interface */
 
 	// Create REST call to KnowRob

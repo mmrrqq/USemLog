@@ -42,14 +42,9 @@ private:
 	// Finish then publish the event
 	bool FinishContactEvent(USLBaseIndividual* InOther, float EndTime);
 
-	// Finish then publish the event
-	bool FinishCuttingEvent(USLBaseIndividual* InOther, float EndTime);
-
 	// Start new Pouring event
 	void AddNewPouringEvent(const FSLContactResult& InResult);
 
-	// Start new Cutting event
-	void AddNewCuttingEvent(const FSLContactResult& InResult);
 
 	// Finish then publish the event
 	bool FinishPouringEvent(USLBaseIndividual* InOther, float EndTime);
@@ -94,9 +89,6 @@ private:
 	// Array of started Pouring events
 	TArray<TSharedPtr<FSLPouringEvent>> StartedPouringEvents;
 
-	// Array of started Cutting events
-	TArray<TSharedPtr<FSLCuttingEvent>> StartedCuttingEvents;
-
 	bool IsPouringEventCurrentlyRunning(TArray<std::tuple<FString, float>> Containers, const FSLContactResult& InResult);
 	
 	/* Constant values */
@@ -120,6 +112,5 @@ private:
 	float MaxPouringEventTime = 5;
 	TSharedPtr<FSLPouringEvent> CurrentPouringEvent;
 
-	TSharedPtr<FSLCuttingEvent> CurrentCuttingEvent;
 	
 };

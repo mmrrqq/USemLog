@@ -191,6 +191,14 @@ struct FLSymbolicEventsSelection
 	UPROPERTY(EditAnywhere, Category = "Semantic Logger|Events", meta = (editcondition = "!bSelectAll"))
 	bool bPouring = true;
 
+	/* Cutting */
+	UPROPERTY(EditAnywhere, Category = "Semantic Logger|Events", meta = (editcondition = "!bSelectAll"))
+	bool bCutting = true;
+
+	/* Cleaning */
+	UPROPERTY(EditAnywhere, Category = "Semantic Logger|Events", meta = (editcondition = "!bSelectAll"))
+	bool bCleaning = true;
+
 	///* Container */
 	//UPROPERTY(EditAnywhere, Category = "Semantic Logger|Events", meta = (editcondition = "!bSelectAll"))
 	//bool bContainer = true;

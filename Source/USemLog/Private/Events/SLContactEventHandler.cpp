@@ -103,9 +103,6 @@ void FSLContactEventHandler::AddNewContactEvent(const FSLContactResult& InResult
 	// TODO: add new spilling event as well when particles touch the table or other defined surfaces
 	AddNewPouringEvent(InResult);
 
-	// Start a semantic Cutting event, if cutter and cuttie are involved in contact
-	// TODO: Replace this with the Parent->OnCuttingBegin.AddRaw
-	AddNewCuttingEvent(InResult);
 
 	
 }
@@ -140,35 +137,7 @@ bool FSLContactEventHandler::FinishContactEvent(USLBaseIndividual* InOther, floa
 	return false;
 }
 
-// Publish finished event
-bool FSLContactEventHandler::FinishCuttingEvent(USLBaseIndividual* InOther, float EndTime)
-{
-	// Use iterator to be able to remove the entry from the array
-	for (auto EventItr(StartedCuttingEvents.CreateIterator()); EventItr; ++EventItr)
-	{
-		// It is enough to compare against the other id when searching
-		if ((*EventItr)->Individual2 == InOther)
-		{
-			// Set the event end time
-			(*EventItr)->EndTime = EndTime;
 
-			// Avoid publishing short events
-			if (((*EventItr)->EndTime - (*EventItr)->StartTime) > ContactEventMin)
-			{
-				OnSemanticEvent.ExecuteIfBound(*EventItr);
-			}
-
-
-			// Remove event from the pending list
-			EventItr.RemoveCurrent();
-
-
-
-			return true;
-		}
-	}
-	return false;
-}
 
 // Start new supported by event
 void FSLContactEventHandler::AddNewSupportedByEvent(USLBaseIndividual* Supported, USLBaseIndividual* Supporting, float StartTime, const uint64 EventPairId)
@@ -252,19 +221,7 @@ void FSLContactEventHandler::FinishAllEvents(float EndTime)
 
 	StartedPouringEvents.Empty();
 
-	// Finish cutting events
-	for (auto& Ev : StartedCuttingEvents)
-	{
-		// Ignore short events
-		if (EndTime - Ev->StartTime > CuttingEventMin)
-		{
-			// Set end time and publish event
-			Ev->EndTime = EndTime;
-			OnSemanticEvent.ExecuteIfBound(Ev);
-		}
-	}
-
-	StartedCuttingEvents.Empty();
+	
 }
 
 // Start new Pouring event
@@ -393,7 +350,6 @@ void FSLContactEventHandler::OnSLOverlapEnd(USLBaseIndividual* Self, USLBaseIndi
 {
 	FinishContactEvent(Other, Time);
 
-	FinishCuttingEvent(Other, Time);
 
 	// for pouring contacts do some more calculation about what time it should end
 	if (Other->GetClass() == USLParticleIndividual::StaticClass()) {
@@ -428,24 +384,3 @@ void FSLContactEventHandler::OnSLPouringEnds(USLBaseIndividual* Self, USLBaseInd
 }
 
 
-// Start new Cutting event
-void FSLContactEventHandler::AddNewCuttingEvent(const FSLContactResult& InResult)
-{
-	//AStaticMeshActor* ASLCutter = Cast<AStaticMeshActor>(InResult.Self);
-	//UActorComponent* comp = GetComponentByClass(ASLCutter::StaticClass());
-
-	// Start a semantic Cutting event
-	if (1) {
-		// Log a new cutting event.
-		UE_LOG(LogTemp, Display, TEXT("Cutting event detected"));
-		CurrentCuttingEvent = MakeShareable(new FSLCuttingEvent(
-			FSLUuid::NewGuidInBase64Url(), InResult.Time,
-			FSLUuid::PairEncodeCantor(InResult.Self->GetUniqueID(), InResult.Other->GetUniqueID()),
-			InResult.Self, InResult.Other));
-		CurrentCuttingEvent->EpisodeId = EpisodeId;
-		// Add event to the pending CuttingArray
-		StartedCuttingEvents.Emplace(CurrentCuttingEvent);
-
-	}
-
-}

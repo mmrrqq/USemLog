@@ -17,6 +17,15 @@ class ASLIndividualManager;
 
 /**
  * Subsymbolic data logger
+ * This logger starts and tracks all 
+ * Monitors - Actor Components which track the symbolic behaviour of the actor it is attached to
+ * Agents - Actor, which is controlled by the objects which inherit from it e.g CutterAgentClass is an Actor, CuttingKnife is an BP which inherits from
+ *			it and can have an own sophisticated cutting logic. It calls the inherit cutting-functions which are then wrapped into events.
+ * 
+ * The general workflow is as follows. 
+ * This class starts and tracks all Monitors and Agents.
+ * These Monitors and Agents observe behaviour in the simulation and create Unreal Events
+ * Event handler process these events and map them into SemLog Events using SL__Event classes and put them into the event queue
  */
 UCLASS(ClassGroup = (SL), DisplayName = "SL Symbolic Logger")
 class USEMLOG_API ASLSymbolicLogger : public AInfo
@@ -118,6 +127,12 @@ private:
 	// Iterate and init the slicing monitors
 	void InitSlicingMonitors();
 
+	// Iterate and init the cutting Agents
+	void InitCuttingAgents();
+
+	// Iterate and init the cutting Agents
+	void InitCleaningAgents();
+
 	// Publish data through ROS
 	void InitROSPublisher();
 
@@ -176,6 +191,13 @@ private:
 
 	// Cache of the pick and place Monitors
 	TArray<class USLPickAndPlaceMonitor*> PickAndPlaceMonitors;
+
+	// Cache of the Cutter
+	TArray<class ASLCutterAgentClass*> CuttingAgents;
+
+	// Cache of the Cleaning
+	TArray<class ASLCleanerAgent*> CleaningAgents;
+
 
 	//// Cache of the container manipulation Monitors
 	//TArray<class USLContainerMonitor*> ContainerMonitors;

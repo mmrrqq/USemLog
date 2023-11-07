@@ -117,3 +117,43 @@ struct FSLMonEntityPair
 };
 
 
+USTRUCT()
+struct FSLInteractionResult
+{
+	GENERATED_BODY()
+
+	// Self
+	USLBaseIndividual* Self;
+
+	// Other 
+	USLBaseIndividual* Other;
+
+	// Timestamp in seconds of the event triggering
+	float Time;
+
+	// Default ctor
+	FSLInteractionResult() {};
+
+	// Init constructor
+	FSLInteractionResult(USLBaseIndividual* InSelf, USLBaseIndividual* InOther, float InTime) :
+		Self(InSelf),
+		Other(InOther),
+		Time(InTime)
+	{};
+
+	// Get result as string
+	FString GetInfo() const
+	{
+		FString Info;
+		Info.Append(FString::Printf(TEXT("Self=%s; "), Self ? *Self->GetInfo() : *FString("null")));
+		Info.Append(FString::Printf(TEXT("Other=%s; "), Self ? *Self->GetInfo() : *FString("null")));
+		Info.Append(FString::Printf(TEXT("Time=%f; "), Time));
+		return Info;
+	}
+};
+
+
+
+
+
+
