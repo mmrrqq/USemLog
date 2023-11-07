@@ -2,7 +2,7 @@
 // Author: Andrei Haidu (http://haidu.eu)
 
 #include "Editor/SLAssetManager.h"
-#include "ModuleManager.h"
+#include "Modules/ModuleManager.h"
 #include "EngineGlobals.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
