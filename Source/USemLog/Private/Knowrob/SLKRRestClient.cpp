@@ -241,7 +241,7 @@ void FSLKRRestClient::ProcessKnowrobResponse(const FString& ResponseContent) {
     FJsonSerializer::Deserialize(JsonReader, OutObject);
 
     
-    //*OutObject->GetStringField(TEXT("query")
+    //OutObject->GetStringField(TEXT("query")
     TArray<TSharedPtr<FJsonValue>> ResponesArray =  OutObject->GetArrayField(TEXT("response"));
     UE_LOG(LogTemp, Warning, TEXT("Length: %d"), ResponesArray.Num());
     for (TSharedPtr<FJsonValue> elem : ResponesArray) {
