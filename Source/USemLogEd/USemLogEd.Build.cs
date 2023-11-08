@@ -44,6 +44,7 @@ public class USemLogEd : ModuleRules
 				"SlateCore",
 				"InputCore",
 				"UnrealEd",
+				"EditorFramework",
 				"LevelEditor",
 				"Projects",
 				// ... add private dependencies that you statically link with here ...
