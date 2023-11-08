@@ -28,57 +28,40 @@ public:
 
 private:
 	/* **Start** Vertical Slot Entries */
+	TSharedRef<SVerticalBox> CreateParentVerticalBox();
 	// Separator hack slot
-	SVerticalBox::FSlot& CreateSeparatorHackSlot();
+	static TSharedRef<SHorizontalBox> CreateSeparator();
 
 	// Flag checkboxes
-	SVerticalBox::FSlot& CreateCompactCheckBoxSlot();
-	SVerticalBox::FSlot& CreateOverwriteFlagSlot();
-	SVerticalBox::FSlot& CreateOnlySelectedFlagSlot();
-	SVerticalBox::FSlot& CreateResetFlagSlot();
-	SVerticalBox::FSlot& CreateTryImportFlagSlot();
-	SVerticalBox::FSlot& CreateIncludeChildrenFlagSlot();
+	TSharedRef<SHorizontalBox> CreateCompactCheckBoxHorizontalBox();
+	TSharedRef<SHorizontalBox> CreateOverwriteFlagSlot();
+	TSharedRef<SHorizontalBox> CreateOnlySelectedFlagSlot();
+	TSharedRef<SHorizontalBox> CreateResetFlagSlot();
+	TSharedRef<SHorizontalBox> CreateTryImportFlagSlot();
+	TSharedRef<SHorizontalBox> CreateIncludeChildrenFlagSlot();
 
 	// Individual Components
-	SVerticalBox::FSlot& CreateIndividualsTxtSlot();
-	SVerticalBox::FSlot& CreateIndividualsSlot();
-	SVerticalBox::FSlot& CreateIndividualsFuncSlot();
+	TSharedRef<SHorizontalBox> CreateIndividualsBox();
+	TSharedRef<SHorizontalBox> CreateIndividualsFuncBox();
 
-	// Individual Values
-	SVerticalBox::FSlot& CreateIndividualValuesTxtSlot();
-	SVerticalBox::FSlot& CreateIndividualValuesAllSlot();
-	SVerticalBox::FSlot& CreateIndivualValuesIdSlot();
-	SVerticalBox::FSlot& CreateIndividualValuesClassSlot();
-	SVerticalBox::FSlot& CreateIndividualValuesVisualMaskSlot();
+	// Individual Values	
+	TSharedRef<SHorizontalBox> CreateIndividualValuesAllBox();
+	TSharedRef<SHorizontalBox> CreateIndividualValuesIdBox();
+	TSharedRef<SHorizontalBox> CreateIndividualValuesClassBox();
+	TSharedRef<SHorizontalBox> CreateIndividualValuesVisualMaskBox();
 	
-	// Import / Export
-	SVerticalBox::FSlot& CreateImportExportTxtSlot();
-	SVerticalBox::FSlot& CreateImportExportSlot();
+	// Import / Export	
+	TSharedRef<SHorizontalBox> CreateImportExportBox();
 
-	// Individual Visual Info
-	SVerticalBox::FSlot& CreateIndividualsInfoTxtSlot();
-	SVerticalBox::FSlot& CreateIndividualsInfoSlot();
-	SVerticalBox::FSlot& CreateIndividualsInfoFuncSlot();
+	// Individual Visual Info	
+	TSharedRef<SHorizontalBox> CreateIndividualsInfoBox();
+	TSharedRef<SHorizontalBox> CreateIndividualsInfoFuncBox();
 
-	// Individual Managers
-	SVerticalBox::FSlot& CreateIndividualsManagersTxtSlot();
-	SVerticalBox::FSlot& CreateIndividualsManagersSlot();
+	// Individual Managers	
+	TSharedRef<SHorizontalBox> CreateIndividualsManagersBox();
 
 	// Semantic Map
-	SVerticalBox::FSlot& CreateSemMapSlot();
-
-	// Misc
-	SVerticalBox::FSlot& CreateUtilsTxtSlot();
-	SVerticalBox::FSlot& CreateConvertToVizMapSlot();
-	SVerticalBox::FSlot& CreateLogIdsSlot();
-	SVerticalBox::FSlot& CreateAddSemMonitorsSlot();
-	SVerticalBox::FSlot& CreateEnableOverlapsSlot();
-	SVerticalBox::FSlot& CreateShowSemData();
-	SVerticalBox::FSlot& CreateEnableInstacedMeshMaterialsSlot();
-	SVerticalBox::FSlot& CreateTriggerGCSlot();
-
-	// Info
-	SVerticalBox::FSlot& CreateGenericButtonSlot();
+	TSharedRef<SHorizontalBox> CreateSemMapBox();
 	/* **End** Vertical Slot Entries */
 
 
