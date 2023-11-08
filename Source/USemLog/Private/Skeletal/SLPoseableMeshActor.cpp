@@ -15,7 +15,6 @@ ASLPoseableMeshActor::ASLPoseableMeshActor()
 	// Create the poseable mesh and set it as root
 	PoseableMeshComponent = CreateDefaultSubobject<UPoseableMeshComponent>(TEXT("PoseableMeshComponent"));
 	PoseableMeshComponent->bPerBoneMotionBlur = false;
-	PoseableMeshComponent->bHasMotionBlurVelocityMeshes = false;
 	RootComponent = PoseableMeshComponent;
 }
 

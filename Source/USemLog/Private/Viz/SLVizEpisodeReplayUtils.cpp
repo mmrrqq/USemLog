@@ -67,7 +67,6 @@ void FSLVizEpisodeUtils::AddPoseablMeshComponentsToSkeletalActors(UWorld* World)
 		PMC->SetSkeletalMesh((*SkelActItr)->GetSkeletalMeshComponent()->SkeletalMesh);
 		PMC->AttachToComponent((*SkelActItr)->GetRootComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale);
 		PMC->RegisterComponent();
-		PMC->bHasMotionBlurVelocityMeshes = false;
 		PMC->bPerBoneMotionBlur = false;
 
 		(*SkelActItr)->AddInstanceComponent(PMC); // Makes it appear in the editor
