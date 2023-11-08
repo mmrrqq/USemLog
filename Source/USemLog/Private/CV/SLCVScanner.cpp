@@ -11,10 +11,10 @@
 #include "Engine/StaticMeshActor.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialInstanceDynamic.h"
-#include "Async.h"
+#include "Async/Async.h"
 #include "HighResScreenshot.h"
 #include "ImageUtils.h"
-#include "FileHelper.h"
+#include "Misc/FileHelper.h"
 
 #include "Engine.h"
 #include "Engine/PostProcessVolume.h"
@@ -940,7 +940,7 @@ void ASLCVScanner::SetRenderParams()
 // Get the individual manager from the world (or spawn a new one)
 bool ASLCVScanner::SetIndividualManager()
 {
-	if (IndividualManager && IndividualManager->IsValidLowLevel() && !IndividualManager->IsPendingKillOrUnreachable())
+	if (IndividualManager && IsValid(IndividualManager) && !IndividualManager->IsUnreachable())
 	{
 		return true;
 	}
@@ -948,13 +948,13 @@ bool ASLCVScanner::SetIndividualManager()
 	{
 		IndividualManager = ASLIndividualManager::GetExistingOrSpawnNew(GetWorld());
 	}
-	return IndividualManager && IndividualManager->IsValidLowLevel() && !IndividualManager->IsPendingKillOrUnreachable();
+	return IndividualManager && IsValid(IndividualManager) && !IndividualManager->IsUnreachable();
 }
 
 // Get the mongo query manager (used to set up scenes from episodic memories)
 bool ASLCVScanner::SetMongoQueryManager()
 {
-	if (MongoQueryManager && MongoQueryManager->IsValidLowLevel() && !MongoQueryManager->IsPendingKillOrUnreachable())
+	if (MongoQueryManager && IsValid(MongoQueryManager) && !MongoQueryManager->IsUnreachable())
 	{
 		return true;
 	}
@@ -962,7 +962,7 @@ bool ASLCVScanner::SetMongoQueryManager()
 	{
 		MongoQueryManager = ASLMongoQueryManager::GetExistingOrSpawnNew(GetWorld());
 	}
-	return MongoQueryManager && MongoQueryManager->IsValidLowLevel() && !MongoQueryManager->IsPendingKillOrUnreachable();
+	return MongoQueryManager && IsValid(MongoQueryManager) && !MongoQueryManager->IsUnreachable();
 }
 
 // Set the individuals to be scanned

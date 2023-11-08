@@ -7,7 +7,7 @@
 #include "GameFramework/Info.h"
 #include "Runtime/SLLoggerStructs.h"
 #include "Knowrob/SLKRRestClient.h"
-#include "Actors/SLRestModuleAgentClass.h"
+#include "Classes/Actors/SLRestModuleAgentClass.h"
 #include "Speech/SLSpeechRestClient.h"
 #include "SLLoggerManager.generated.h"
 

@@ -12,10 +12,10 @@
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
 
-#include "Async.h"
+#include "Async/Async.h"
 #include "HighResScreenshot.h"
 #include "ImageUtils.h"
-#include "FileHelper.h"
+#include "Misc/FileHelper.h"
 #include "Engine.h"
 
 #if WITH_EDITOR
@@ -464,14 +464,14 @@ void ASLCVMaskCalibrator::SetRenderParams()
 // Get the individual manager from the world (or spawn a new one)
 bool ASLCVMaskCalibrator::SetIndividualManager()
 {
-	if (IndividualManager && IndividualManager->IsValidLowLevel() && !IndividualManager->IsPendingKillOrUnreachable())
+	if (IndividualManager && IsValid(IndividualManager) && !IndividualManager->IsUnreachable())
 	{
 		return true;
 	}
 
 	for (TActorIterator<ASLIndividualManager>Iter(GetWorld()); Iter; ++Iter)
 	{
-		if ((*Iter)->IsValidLowLevel() && !(*Iter)->IsPendingKillOrUnreachable())
+		if (IsValid(*Iter) && !(*Iter)->IsUnreachable())
 		{
 			IndividualManager = *Iter;
 			return true;
